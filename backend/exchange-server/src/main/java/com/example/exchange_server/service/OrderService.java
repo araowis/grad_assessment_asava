@@ -3,8 +3,10 @@ package com.example.exchange_server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.exchange_server.dto.OrderRequestDTO;
 import com.example.exchange_server.engine.MatchingEngine;
 import com.example.exchange_server.model.Order;
+import com.example.exchange_server.model.OrderStatus;
 import com.example.exchange_server.repository.OrderRepository;
 
 @Service

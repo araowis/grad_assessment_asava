@@ -1,3 +1,6 @@
+package com.example.exchange_server.util;
+
+import java.util.Random;
 
 public class PriceUtil {
 
@@ -12,4 +15,5 @@ public class PriceUtil {
 
         return currentPrice * (1 + change);
     }
+
 }

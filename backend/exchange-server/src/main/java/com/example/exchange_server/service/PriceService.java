@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.exchange_server.client.CompanyClient;
+import com.example.exchange_server.dto.CompanyDTO;
+import com.example.exchange_server.util.PriceUtil;
 
 @Service
 public class PriceService {
@@ -17,7 +19,7 @@ public class PriceService {
         List<CompanyDTO> companies = companyClient.getAllCompanies();
 
         for (CompanyDTO company : companies) {
-            double newPrice = PriceUtil.calculateNewPrice(company.getPrice());
+            double newPrice = PriceUtil.calculateNewPrice(company.getCurrentPrice());
             companyClient.updatePrice(company.getShortId(), newPrice);
         }
     }

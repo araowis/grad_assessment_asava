@@ -2,15 +2,16 @@ package com.example.exchange_server.model;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
 
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id

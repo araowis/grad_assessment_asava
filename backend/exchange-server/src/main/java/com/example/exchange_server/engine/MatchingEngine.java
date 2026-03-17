@@ -1,12 +1,18 @@
 package com.example.exchange_server.engine;
 
+import java.time.LocalDateTime;
 import java.util.PriorityQueue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.exchange_server.client.CompanyClient;
+import com.example.exchange_server.dto.CompanyDTO;
 import com.example.exchange_server.model.Order;
+import com.example.exchange_server.model.OrderType;
+import com.example.exchange_server.model.Trade;
 import com.example.exchange_server.repository.TradeRepository;
+import com.example.exchange_server.util.ValidatePrice;
 
 @Service
 public class MatchingEngine {
@@ -16,6 +22,12 @@ public class MatchingEngine {
 
     @Autowired
     private TradeRepository tradeRepository;
+
+    @Autowired
+    private CompanyClient companyClient;
+
+    @Autowired
+    private ValidatePrice validatePrice;
 
     public synchronized void processOrder(Order order) {
 
@@ -65,18 +77,48 @@ public class MatchingEngine {
         }
     }
 
+    // private void executeTrade(Order buy, Order sell) {
+    //     int qty = Math.min(buy.getQuantity(), sell.getQuantity());
+    //     buy.setQuantity(buy.getQuantity() - qty);
+    //     sell.setQuantity(sell.getQuantity() - qty);
+    //     Trade trade = new Trade();
+    //     trade.setBuyerId(buy.getUserId());
+    //     trade.setSellerId(sell.getUserId());
+    //     trade.setCompanyId(buy.getCompanyId());
+    //     trade.setQuantity(qty);
+    //     trade.setPrice(sell.getPrice());
+    //     trade.setExecutedAt(LocalDateTime.now());
+    //     tradeRepository.save(trade);
+    // }
     private void executeTrade(Order buy, Order sell) {
+
         int qty = Math.min(buy.getQuantity(), sell.getQuantity());
 
         buy.setQuantity(buy.getQuantity() - qty);
         sell.setQuantity(sell.getQuantity() - qty);
 
+        double tradePrice = sell.getPrice();
+
+        // 🔥 FETCH COMPANY DATA
+        CompanyDTO company = companyClient.getCompanyById(buy.getCompanyId());
+
+        // 🔥 VALIDATE PRICE
+        double validPrice = validatePrice.validatePrice(
+                company.getCurrentPrice(),
+                tradePrice,
+                company.getOpeningPrice()
+        );
+
+        // 🔥 UPDATE PRICE VIA FEIGN
+        companyClient.updatePrice(buy.getCompanyId(), validPrice);
+
+        // ✅ SAVE TRADE
         Trade trade = new Trade();
         trade.setBuyerId(buy.getUserId());
         trade.setSellerId(sell.getUserId());
         trade.setCompanyId(buy.getCompanyId());
         trade.setQuantity(qty);
-        trade.setPrice(sell.getPrice());
+        trade.setPrice(validPrice);
         trade.setExecutedAt(LocalDateTime.now());
 
         tradeRepository.save(trade);
