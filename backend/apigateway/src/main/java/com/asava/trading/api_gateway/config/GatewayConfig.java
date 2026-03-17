@@ -15,9 +15,9 @@ public class GatewayConfig {
                         .path("/api/v1/auth/**")
                         .uri("lb://AUTH-SERVICE"))
 
-                .route("customer-service", r -> r
-                        .path("/api/v1/customer/**")
-                        .uri("lb://CUSTOMER-SERVICE"))
+                .route("company-service", r -> r
+                        .path("/api/v1/companies/**")
+                        .uri("lb://COMPANY-SERVICE"))
 
                 .build();
     }

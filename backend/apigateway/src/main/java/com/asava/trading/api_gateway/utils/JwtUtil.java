@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "your-secret-your-secret-your-secret"; // must be long enough
+    private final String SECRET = "dGVzdHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHkxMjM0NTY3ODk="; // must be long enough
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
