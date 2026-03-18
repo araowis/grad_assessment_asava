@@ -17,21 +17,17 @@ public class Company {
     @Column(name = "no_of_share")
     private int noOfShare;
 
-    @Column(nullable = false, name = "opening_price")
-    private double openingPrice = 0.0;
-
-    @Column(nullable = false, name = "current_price")
-    private double currentPrice = 0.0;
+    @Column(nullable = false)
+    private double price;
 
     public Company() {
     }
 
-    public Company(String shortId, String name, int noOfShare, double openingPrice, double currentPrice) {
+    public Company(String shortId, String name, int noOfShare, double price) {
         this.shortId = shortId;
         this.name = name;
         this.noOfShare = noOfShare;
-        this.openingPrice = openingPrice;
-        this.currentPrice = currentPrice;
+        this.price = price;
     }
 
     public String getShortId() {
@@ -58,16 +54,12 @@ public class Company {
         this.noOfShare = noOfShare;
     }
 
-    public void setCurrentPrice(double currentPrice) {
-        this.currentPrice = currentPrice;
+    public double getPrice() {
+        return price;
     }
-    public double getCurrentPrice() {
-        return currentPrice;
+
+    public void setPrice(double price) {
+        this.price = price;
     }
-    public void setOpeningPrice(double openingPrice) {
-        this.openingPrice = openingPrice;
-    }
-    public double getOpeningPrice() {
-        return openingPrice;
-    }
+
 }

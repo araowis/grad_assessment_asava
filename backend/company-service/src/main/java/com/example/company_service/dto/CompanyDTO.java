@@ -5,22 +5,18 @@ public class CompanyDTO {
     private String shortId;
     private String name;
     private int noOfShare;
-    private double openingPrice;
-    private double currentPrice;
+    private double price;
 
     // Default Constructor
     public CompanyDTO() {
     }
 
     // Parameterized Constructor
-    public CompanyDTO(String shortId, String name, int noOfShare, double openingPrice, double currentPrice) {
+    public CompanyDTO(String shortId, String name, int noOfShare, double price) {
         this.shortId = shortId;
         this.name = name;
         this.noOfShare = noOfShare;
-        this.openingPrice = openingPrice;
-        this.currentPrice = currentPrice;
-
-        
+        this.price = price;
     }
 
     // Getters & Setters
@@ -48,18 +44,11 @@ public class CompanyDTO {
         this.noOfShare = noOfShare;
     }
 
-    public double getOpeningPrice() {
-        return openingPrice;
+    public double getPrice() {
+        return price;
     }
 
-    public void setOpeningPrice(double openingPrice) {
-        this.openingPrice = openingPrice;
-    }
-    public double getCurrentPrice() {
-        return currentPrice;
-    }
-
-    public void setCurrentPrice(double currentPrice) {
-        this.currentPrice = currentPrice;
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

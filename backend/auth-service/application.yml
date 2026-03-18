@@ -11,7 +11,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/asava_trading
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:hydroarchon}
+    password: ${DB_PASSWORD:Sarthak1@}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -35,7 +35,7 @@ eureka:
     lease-expiration-duration-in-seconds: 30
 
 jwt:
-  secret: ${JWT_SECRET:dGVzdHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHkxMjM0NTY3ODk=}
+  secret: ${JWT_SECRET:3f8b9c2d1e4a7f6b0c5d3e8a1f4b7c2d9e6a3f0b7c4d1e8a5f2b9c6d3e0a7f4}
   expiration: 86400000 
   refresh-expiration: 604800000 
 

@@ -8,7 +8,7 @@
   },
   "include": [
     "src/**/*.ts"
-  ],
+, "src/app/guards/guest-guard.ts"  ],
   "exclude": [
     "src/**/*.spec.ts"
   ]

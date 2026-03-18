@@ -21,10 +21,6 @@ public class GatewayConfig {
                                                 .path("/api/v1/companies/**")
                                                 .uri("lb://COMPANY-SERVICE"))
 
-                                .route("exchange-server-service", r -> r
-                                                .path("/api/v1/exchange/**")
-                                                .uri("lb://EXCHANGE-SERVER-SERVICE"))
-
                                 .build();
         }
 }

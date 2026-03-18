@@ -29,8 +29,8 @@
               class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Current Price</label>
-            <input [(ngModel)]="companyForm.currentPrice" name="currentPrice" type="number" step="0.01"
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Price</label>
+            <input [(ngModel)]="companyForm.price" name="price" type="number" step="0.01"
               class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-200 outline-none">
           </div>
         </div>
@@ -59,7 +59,7 @@
             <td class="px-6 py-4 font-mono font-bold text-blue-600">{{c.shortId}}</td>
             <td class="px-6 py-4 text-slate-700">{{c.name}}</td>
             <td class="px-6 py-4 text-right text-slate-600">{{c.noOfShare | number}}</td>
-            <td class="px-6 py-4 text-right font-semibold text-emerald-600">₹{{c.currentPrice | number:'1.2-2'}}</td>
+            <td class="px-6 py-4 text-right font-semibold text-emerald-600">₹{{c.price | number:'1.2-2'}}</td>
             <td class="px-6 py-4 text-center space-x-2">
               <button (click)="editCompany(c)" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">✏️</button>
               <button (click)="deleteCompany(c.shortId)" class="p-2 text-red-600 hover:bg-red-50 rounded-lg">❌</button>

@@ -1,0 +1,194 @@
+<!-- Header Section -->
+<div class="header-section">
+  <div class="header-content">
+    <div class="symbol-info">
+      <h1 class="symbol">{{ symbol }}</h1>
+      <div class="name-subtitle">{{ name }}</div>
+    </div>
+    <div class="price-info">
+      <div class="current-price">${{ price | number:'1.2-2' }}</div>
+      <div [class]="'price-change ' + (changePercent >= 0 ? 'positive' : 'negative')">
+        <span class="icon">{{ changePercent >= 0 ? '📈' : '📉' }}</span>
+        <span>{{ changePercent >= 0 ? '+' : '' }}{{ changePercent | number:'1.2-2' }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Time Filter -->
+<div class="time-filter-section">
+  <button *ngFor="let period of timePeriods" 
+          (click)="selectTimePeriod(period)" 
+          [class.active]="selectedPeriod === period"
+          class="time-btn">
+    {{ period }}
+  </button>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+  <!-- Left Column: Chart and Transactions -->
+  <div class="left-column">
+    <!-- Price Summary Card -->
+    <div class="card price-summary-card">
+      <div class="card-header">Price Summary</div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">24h High</div>
+          <div class="summary-value">${{ priceStats.high24h | number:'1.2-2' }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">24h Low</div>
+          <div class="summary-value">${{ priceStats.low24h | number:'1.2-2' }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">24h Volume</div>
+          <div class="summary-value">${{ priceStats.volume24h | number:'1.0-0' }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Market Cap</div>
+          <div class="summary-value">${{ priceStats.marketCap | number:'1.0-0' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price Chart Card -->
+    <div class="card chart-card">
+      <div class="card-header">Price Chart</div>
+      <div class="chart-container">
+        <canvas baseChart
+                [data]="chartData"
+                [type]="chartType"
+                [options]="chartOptions"
+                class="chart"
+        ></canvas>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card transactions-card">
+      <div class="card-header">Recent Transactions</div>
+      <div class="transactions-list">
+        <div *ngFor="let tx of recentTransactions" 
+             [class]="'transaction-item ' + tx.type">
+          <div class="tx-left">
+            <div class="tx-type">{{ tx.type === 'buy' ? '🟢 BUY' : '🔴 SELL' }}</div>
+            <div class="tx-time">{{ tx.time }}</div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount">{{ tx.amount }} {{ symbol }}</div>
+            <div class="tx-price">${{ tx.price | number:'1.2-2' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Order Placement and Order Book -->
+  <div class="right-column">
+    <!-- Place Order Card -->
+    <div class="card place-order-card">
+      <div class="card-header">Place Order</div>
+      
+      <!-- Buy/Sell Toggle -->
+      <div class="order-type-toggle">
+        <button [class.active]="orderType === 'buy'" 
+                (click)="orderType = 'buy'" 
+                class="toggle-btn buy-btn">
+          BUY
+        </button>
+        <button [class.active]="orderType === 'sell'" 
+                (click)="orderType = 'sell'" 
+                class="toggle-btn sell-btn">
+          SELL
+        </button>
+      </div>
+
+      <!-- Order Form -->
+      <div class="order-form">
+        <div class="form-group">
+          <label>Quantity ({{ symbol }})</label>
+          <input type="number" 
+                 [(ngModel)]="orderQuantity" 
+                 placeholder="0.00"
+                 class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Price per Unit ($)</label>
+          <input type="number" 
+                 [(ngModel)]="orderPrice" 
+                 placeholder="0.00"
+                 class="form-input">
+        </div>
+
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>${{ (orderQuantity * orderPrice) | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Fee (0.1%)</span>
+            <span>${{ (orderQuantity * orderPrice * 0.001) | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>${{ (orderQuantity * orderPrice * 1.001) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <button (click)="submitOrder()" 
+                [class]="'submit-btn ' + orderType">
+          {{ orderType === 'buy' ? '🟢 BUY NOW' : '🔴 SELL NOW' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Order Book Card -->
+    <div class="card order-book-card">
+      <div class="card-header">Order Book</div>
+      
+      <!-- Asks (Sell Orders) -->
+      <div class="order-section asks">
+        <div class="section-title">Asks</div>
+        <div class="order-table">
+          <div class="table-header">
+            <div class="col-price">Price</div>
+            <div class="col-amount">Amount</div>
+            <div class="col-total">Total</div>
+          </div>
+          <div *ngFor="let ask of orderBook.asks" class="table-row ask">
+            <div class="col-price">{{ ask.price | number:'1.2-2' }}</div>
+            <div class="col-amount">{{ ask.amount | number:'1.4-4' }}</div>
+            <div class="col-total">{{ (ask.price * ask.amount) | number:'1.2-2' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spread -->
+      <div class="spread-divider">
+        <div class="spread-info">
+          <span class="label">Spread:</span>
+          <span class="value">{{ currentSpread | number:'1.2-2' }}%</span>
+        </div>
+      </div>
+
+      <!-- Bids (Buy Orders) -->
+      <div class="order-section bids">
+        <div class="section-title">Bids</div>
+        <div class="order-table">
+          <div class="table-header">
+            <div class="col-price">Price</div>
+            <div class="col-amount">Amount</div>
+            <div class="col-total">Total</div>
+          </div>
+          <div *ngFor="let bid of orderBook.bids" class="table-row bid">
+            <div class="col-price">{{ bid.price | number:'1.2-2' }}</div>
+            <div class="col-amount">{{ bid.amount | number:'1.4-4' }}</div>
+            <div class="col-total">{{ (bid.price * bid.amount) | number:'1.2-2' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

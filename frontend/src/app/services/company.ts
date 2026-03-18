@@ -7,7 +7,15 @@ import { Company } from '../models/company';
 })
 
 export class CompanyService {
-  private baseUrl = 'http://localhost:8088/api/v1/companies';
+  /**
+   * Use a relative URL + Angular dev-server proxy for local development.
+   *
+   * To run the app locally and forward calls to the backend, start the frontend with:
+   *   npm start
+   *
+   * and ensure a proxy configuration (proxy.conf.json) points `/api/*` to the API Gateway.
+   */
+  private baseUrl = '/api/v1/companies';
 
   constructor(private http: HttpClient) { }
 
