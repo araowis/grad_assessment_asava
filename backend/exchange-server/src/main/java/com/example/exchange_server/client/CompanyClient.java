@@ -13,12 +13,12 @@ import com.example.exchange_server.dto.CompanyDTO;
 @FeignClient(name = "company-service")
 public interface CompanyClient {
 
-    @GetMapping("/companies")
+    @GetMapping("/api/v1/companies")
     List<CompanyDTO> getAllCompanies();
 
-    @GetMapping("/companies/{id}")
+    @GetMapping("/api/v1/companies/{id}")
     CompanyDTO getCompanyById(@PathVariable String id);
 
-    @PutMapping("/companies/{id}/price")
+    @PutMapping("/api/v1/companies/{id}/price")
     void updatePrice(@PathVariable String id, @RequestParam double price);
 }

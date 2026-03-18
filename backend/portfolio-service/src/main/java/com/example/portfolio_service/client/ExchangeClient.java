@@ -1,12 +1,15 @@
 package com.example.portfolio_service.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import com.example.portfolio_service.dto.OrderRequestDTO;
+
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @FeignClient(name = "exchange-server")
 public interface ExchangeClient {
 
-    @GetMapping("/api/prices/{companyId}")
-    double getPrice(@PathVariable("companyId") String companyId);
+    @PostMapping("/exchange/order")
+    String placeOrder(@RequestBody OrderRequestDTO dto);
 }

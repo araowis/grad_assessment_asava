@@ -11,12 +11,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/portfolios")
+@RequestMapping("api/v1/portfolios")
 @RequiredArgsConstructor
 public class PortfolioController {
 
     private final IPortfolioService service;
 
+    // ✅ BUY
     @PostMapping("/{userId}/buy")
     public ResponseEntity<PortfolioResponseDto> buy(
             @PathVariable Long userId,
@@ -25,20 +26,22 @@ public class PortfolioController {
         return ResponseEntity.ok(service.buy(userId, request));
     }
 
+    // ✅ SELL
     @PostMapping("/{userId}/sell")
-    public ResponseEntity<Void> sell(
+    public ResponseEntity<PortfolioResponseDto> sell(
             @PathVariable Long userId,
-            @RequestParam String companyId,
-            @RequestParam int quantity) {
+            @RequestBody PortfolioRequestDto request) {
 
-        service.sell(userId, companyId, quantity);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(service.sell(userId, request));
     }
 
-    @GetMapping("/{userId}")
+    // ✅ GET PORTFOLIO (Fixed to include companyId filter as per your Service)
+    @GetMapping("/{userId}/{portfolioId}")
     public ResponseEntity<List<PortfolioResponseDto>> getPortfolio(
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @PathVariable Long portfolioId,
+            @RequestParam(required = false) String companyId) {
 
-        return ResponseEntity.ok(service.getPortfolio(userId));
+        return ResponseEntity.ok(service.getPortfolio(userId, portfolioId, companyId));
     }
 }

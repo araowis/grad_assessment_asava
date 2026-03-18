@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.company_service.dto.CompanyDTO;
 import com.example.company_service.models.Company;
 import com.example.company_service.service.ICompanyService;
-import com.example.company_service.service.implementation.CompanyService;
 
 @RestController
 @RequestMapping("/api/v1/companies")

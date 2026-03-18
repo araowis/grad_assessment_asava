@@ -21,7 +21,7 @@ import lombok.Setter;
 @Table(
         name = "portfolios",
         uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"userId", "companyId"})
+            @UniqueConstraint(columnNames = {"userId", "companyId", "portfolioGroupId"})
         }
 )
 @Getter
@@ -39,6 +39,9 @@ public class Portfolio {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(nullable = false)
+    private Long portfolioGroupId;
+
     // 🔹 Company reference (from company-service)
     @Column(nullable = false)
     private String companyId;
@@ -50,6 +53,8 @@ public class Portfolio {
     // 🔹 Weighted average buy price
     @Column(nullable = false)
     private double averageBuyPrice;
+
+    private Double stopLossPrice;
 
     // 🔹 Audit fields
     @UpdateTimestamp

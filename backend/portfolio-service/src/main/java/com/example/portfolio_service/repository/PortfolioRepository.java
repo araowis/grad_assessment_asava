@@ -11,5 +11,11 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
 
     List<Portfolio> findByUserId(Long userId);
 
-    Optional<Portfolio> findByUserIdAndCompanyId(Long userId, String companyId);
+    Optional<Portfolio> findByUserIdAndPortfolioGroupIdAndCompanyId(
+            Long userId, Long portfolioGroupId, String companyId);
+
+    List<Portfolio> findByUserIdAndPortfolioGroupId(
+            Long userId, Long portfolioGroupId);
+
+    List<Portfolio> findByStopLossPriceIsNotNull();
 }
