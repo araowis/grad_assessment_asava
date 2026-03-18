@@ -3,7 +3,7 @@
     <h2 class="text-center text-3xl font-bold tracking-tight text-slate-900">Sign in</h2>
     <form (ngSubmit)="onLogin()" class="mt-8 space-y-6">
       <div class="space-y-4">
-        <input [(ngModel)]="credentials.username" name="username" type="text" placeholder="Username or Email" required
+        <input [(ngModel)]="credentials.emailOrUsername" name="emailOrUsername" type="text" placeholder="Username or Email" required
           class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
         <input [(ngModel)]="credentials.password" name="password" type="password" placeholder="Password" required
           class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">

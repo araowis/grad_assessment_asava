@@ -1,16 +1,21 @@
 export interface User {
-  id?: number;
+  id: number;
   username: string;
   email: string;
   fullName: string;
-  phoneNumber?: string;
   role: 'ROLE_TRADER' | 'ROLE_ANALYST' | 'ROLE_ADMIN';
-  status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+}
+
+export interface LoginDTO {
+  emailOrUsername: string;
+  password: string;
 }
 
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
   user: User;
 }
 

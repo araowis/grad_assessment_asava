@@ -11,7 +11,7 @@ import { Auth } from '../../services/auth';
   styleUrl: './login.css',
 })
 export class Login {
-  credentials = { username: '', password: '' };
+  credentials = { emailOrUsername: '', password: '' };
 
   constructor(private authService: Auth, private router: Router) {}
 

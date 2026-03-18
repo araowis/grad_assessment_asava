@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ApiResponse ,AuthResponse } from '../models/auth';
+import { ApiResponse ,AuthResponse, LoginDTO } from '../models/auth';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Auth {
-  private baseUrl = 'http://localhost:8081/api/v1/auth';
+  private baseUrl = 'http://localhost:8080/api/v1/auth';
 
   constructor(private http: HttpClient) { }
 
@@ -16,7 +16,7 @@ export class Auth {
     return this.http.post<ApiResponse<AuthResponse>>(`${this.baseUrl}/register`, data);
   }
 
-  login(credentials: any): Observable<ApiResponse<AuthResponse>> {
+  login(credentials: LoginDTO): Observable<ApiResponse<AuthResponse>> {
     return this.http.post<ApiResponse<AuthResponse>>(`${this.baseUrl}/login`, credentials).pipe(
       tap((res: ApiResponse<AuthResponse>) => {
         if (res.success) {
