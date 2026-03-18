@@ -1,21 +1,138 @@
-<div class="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-  <div class="w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-200">
-    <h2 class="text-center text-3xl font-bold text-slate-900">Create Account</h2>
-    <form (ngSubmit)="onRegister()" class="mt-8 grid grid-cols-1 gap-4">
-      <input [(ngModel)]="user.fullName" name="fullName" placeholder="Full Name" class="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-200">
-      <div class="grid grid-cols-2 gap-4">
-        <input [(ngModel)]="user.username" name="username" placeholder="Username" class="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-200">
-        <input [(ngModel)]="user.phoneNumber" name="phoneNumber" placeholder="Phone" class="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-200">
-      </div>
-      <input [(ngModel)]="user.email" name="email" type="email" placeholder="Email" class="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-200">
-      <input [(ngModel)]="user.password" name="password" type="password" placeholder="Password" class="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-200">
+<div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
+  <div class="w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl ring-1 ring-slate-200">
+    <!-- Header -->
+    <div class="mb-8 text-center">
+      <h1 class="text-4xl font-bold text-slate-900">ASAVA</h1>
+      <h2 class="mt-2 text-2xl font-semibold text-slate-700">Create Account</h2>
+      <p class="mt-1 text-sm text-slate-500">Join our trading platform</p>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage()" class="mb-4 rounded-lg bg-emerald-50 p-4 border border-emerald-200">
+      <p class="text-sm font-medium text-emerald-700">✅ {{ successMessage() }}</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage()" class="mb-4 rounded-lg bg-rose-50 p-4 border border-rose-200">
+      <p class="text-sm font-medium text-rose-700">❌ {{ errorMessage() }}</p>
+    </div>
+
+    <!-- Registration Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="space-y-4">
       
-      <button type="submit" class="mt-4 w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white hover:bg-emerald-700 transition-all">
-        Register Now
+      <!-- Full Name -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+        <input
+          formControlName="fullName"
+          type="text"
+          placeholder="John Doe"
+          class="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          [class.border-rose-500]="fullName?.invalid && fullName?.touched"
+        />
+        <p *ngIf="fullName?.invalid && fullName?.touched" class="mt-1 text-xs text-rose-600">
+          <span *ngIf="fullName?.errors?.['required']">Full name is required</span>
+          <span *ngIf="fullName?.errors?.['minlength']">Minimum 3 characters</span>
+        </p>
+      </div>
+
+      <!-- Username & Phone (2-column) -->
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+          <input
+            formControlName="username"
+            type="text"
+            placeholder="johndoe"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-rose-500]="username?.invalid && username?.touched"
+          />
+          <p *ngIf="username?.invalid && username?.touched" class="mt-1 text-xs text-rose-600">
+            <span *ngIf="username?.errors?.['required']">Username required</span>
+            <span *ngIf="username?.errors?.['minlength']">4-20 characters</span>
+          </p>
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+          <input
+            formControlName="phoneNumber"
+            type="tel"
+            placeholder="9876543210"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-rose-500]="phoneNumber?.invalid && phoneNumber?.touched"
+          />
+          <p *ngIf="phoneNumber?.invalid && phoneNumber?.touched" class="mt-1 text-xs text-rose-600">
+            <span *ngIf="phoneNumber?.errors?.['required']">Phone required</span>
+            <span *ngIf="phoneNumber?.errors?.['pattern']">10 digit number</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="john@example.com"
+          class="w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          [class.border-rose-500]="email?.invalid && email?.touched"
+        />
+        <p *ngIf="email?.invalid && email?.touched" class="mt-1 text-xs text-rose-600">
+          <span *ngIf="email?.errors?.['required']">Email is required</span>
+          <span *ngIf="email?.errors?.['email']">Invalid email format</span>
+        </p>
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+        <div class="relative">
+          <input
+            [formControlName]="'password'"
+            [type]="showPassword() ? 'text' : 'password'"
+            placeholder="Min 8 chars, mix of upper, lower, number, special"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2.5 pr-12 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-rose-500]="password?.invalid && password?.touched"
+          />
+          <button
+            type="button"
+            (click)="togglePasswordVisibility()"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+          >
+            {{ showPassword() ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        <p *ngIf="password?.invalid && password?.touched" class="mt-1 text-xs text-rose-600">
+          <span *ngIf="password?.errors?.['required']">Password is required</span>
+          <span *ngIf="password?.errors?.['minlength']">Minimum 8 characters</span>
+          <span *ngIf="password?.errors?.['weakPassword']">Mix of upper, lower, number, special char needed</span>
+        </p>
+        <p class="mt-1 text-xs text-slate-500">Password strength: 
+          <span [class]="password?.value?.length! >= 8 ? 'text-emerald-600' : 'text-slate-400'">Strong</span>
+        </p>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        [disabled]="isLoading() || registerForm.invalid"
+        class="mt-6 w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        <span *ngIf="!isLoading()">Register Now</span>
+        <span *ngIf="isLoading()" class="flex items-center gap-2">
+          <span class="inline-block animate-spin">⏳</span> Registering...
+        </span>
       </button>
     </form>
+
+    <!-- Login Link -->
     <p class="mt-6 text-center text-sm text-slate-600">
-      Already have an account? <a routerLink="/login" class="font-medium text-blue-600 hover:underline">Login</a>
+      Already have an account?
+      <a routerLink="/login" class="font-semibold text-blue-600 hover:underline">Login here</a>
     </p>
   </div>
 </div>

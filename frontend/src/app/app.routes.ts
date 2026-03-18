@@ -8,6 +8,7 @@ import { Dashboard } from './components/dashboard/dashboard';
 import { Layout } from './components/layout/layout';
 import { Wallet } from './components/wallet/wallet';
 import { Settings } from './components/settings/settings';
+import { CompanyDetailsComponent } from './components/company-details/company-details.component';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -19,6 +20,7 @@ export const routes: Routes = [
     // canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: Dashboard },
+      { path: 'company-details/:symbol', component: CompanyDetailsComponent },
       { path: 'trading', component: Trading },
       { path: 'wallet', component: Wallet },
       { path: 'settings', component: Settings },

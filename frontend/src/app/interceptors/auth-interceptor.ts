@@ -1,11 +1,11 @@
-import { HttpInterceptorFn ,HttpRequest, HttpHandlerFn, HttpErrorResponse} from '@angular/common/http';
+import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError, switchMap } from 'rxjs';
-import { Auth } from '../services/auth';
+import { catchError, throwError } from 'rxjs';
+import { AuthService } from '../services/auth';
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
-  const authService = inject(Auth);
-  const token = localStorage.getItem('token');
+  const authService = inject(AuthService);
+  const token = authService.getToken() || localStorage.getItem('token');
 
   // 1. Clone the request and add the header if the token exists
   let authReq = req;

@@ -6,7 +6,12 @@ import { OrderRequest,OrderResponse,TradeResponse } from '../models/exchange';
   providedIn: 'root',
 })
 export class ExchangeService {
-  private baseUrl = 'http://localhost:8081/api/v1/exchange'; // Adjust if different
+  /**
+   * Use a relative path + proxy configuration for local development.
+   *
+   * The API Gateway should be listening on http://localhost:8080.
+   */
+  private baseUrl = '/api/v1/exchange';
 
   constructor(private http: HttpClient) { }
 
