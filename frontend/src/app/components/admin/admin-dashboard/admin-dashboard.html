@@ -1,0 +1,138 @@
+<div class="p-8 space-y-6">
+
+  <!-- ─── Header ───────────────────────────────────────────────────── -->
+  <div class="flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white tracking-tight">Admin Dashboard</h1>
+      <p class="text-slate-400 text-sm mt-1">Platform overview &amp; activity</p>
+    </div>
+    <a routerLink="/admin/companies/add"
+       class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white
+              text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-900/30">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Company
+    </a>
+  </div>
+
+  <!-- ─── Loading ──────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="flex items-center justify-center h-64">
+    <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ─── Stats Grid ────────────────────────────────────────────── -->
+    <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+
+      <!-- Companies -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Companies</p>
+          <div class="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-white tabular-nums">{{ stats.totalCompanies }}</p>
+        <p class="text-slate-500 text-xs mt-1.5">Listed on platform</p>
+      </div>
+
+      <!-- Total Stocks -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Stocks</p>
+          <div class="w-9 h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-white tabular-nums">{{ stats.totalStocksListed | number }}</p>
+        <p class="text-slate-500 text-xs mt-1.5">Shares in circulation</p>
+      </div>
+
+      <!-- Market Cap -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Market Cap</p>
+          <div class="w-9 h-9 bg-violet-500/10 rounded-xl flex items-center justify-center">
+            <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-white tabular-nums">${{ stats.totalMarketCap | number:'1.0-0' }}</p>
+        <p class="text-slate-500 text-xs mt-1.5">Combined valuation</p>
+      </div>
+
+      <!-- Total Trades -->
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Trades</p>
+          <div class="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-white tabular-nums">{{ stats.totalTrades | number }}</p>
+        <p class="text-slate-500 text-xs mt-1.5">Executed this month</p>
+      </div>
+
+    </div>
+
+    <!-- ─── Recent Companies Table ───────────────────────────────── -->
+    <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-white font-semibold text-base">Recently Added Companies</h2>
+        <a routerLink="/admin/companies"
+           class="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
+          View all →
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-slate-800">
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3 pl-1">Company</th>
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Symbol</th>
+              <th class="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Total Stocks</th>
+              <th class="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Price</th>
+              <th class="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3 pr-1">Market Cap</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/50">
+            <tr *ngFor="let c of stats.recentCompanies"
+                class="hover:bg-slate-800/30 transition-colors">
+              <td class="py-3.5 pl-1 text-white font-medium text-sm">{{ c.name }}</td>
+              <td class="py-3.5">
+                <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20
+                             px-2.5 py-1 rounded-lg text-xs font-bold font-mono">
+                  {{ c.stockSymbol }}
+                </span>
+              </td>
+              <td class="py-3.5 text-right text-slate-300 text-sm font-mono tabular-nums">
+                {{ c.totalStocks | number }}
+              </td>
+              <td class="py-3.5 text-right text-emerald-400 text-sm font-mono font-semibold tabular-nums">
+                ${{ c.currentPrice | number:'1.2-2' }}
+              </td>
+              <td class="py-3.5 text-right text-slate-300 text-sm font-mono tabular-nums pr-1">
+                ${{ (c.totalStocks * c.currentPrice) | number:'1.0-0' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

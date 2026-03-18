@@ -24,3 +24,11 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
 }
+
+export interface RegisterDTO {
+  fullName: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+}
