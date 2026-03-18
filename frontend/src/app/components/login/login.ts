@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../services/auth';
+import { ApiResponse, AuthResponse } from '../../models/auth';
 
 @Component({
   selector: 'app-login',
@@ -17,11 +18,24 @@ export class Login {
 
   onLogin() {
     this.authService.login(this.credentials).subscribe({
-      next: (res) => {
-        localStorage.setItem('token', res.data.accessToken);
-        this.router.navigate(['/']);
+      next: (res: ApiResponse<AuthResponse>) => {
+        if (res.success && res.data) {
+          // AuthService already saves token + currentUser in its tap() handler
+          const role = res.data.user?.role;
+          console.log("Role found: " + role);
+
+          if (role === 'ROLE_ADMIN') {
+            this.router.navigate(['/admin/dashboard']);
+          } else {
+            // ROLE_TRADER, ROLE_ANALYST
+            this.router.navigate(['/app/dashboard']);
+          }
+        }
       },
-      error: (err) => alert('Login Failed: ' + err.error.message)
+      error: (err: any) => {
+        const message = err?.error?.message || err?.message || 'Login failed.';
+        alert('Login Failed: ' + message);
+      },
     });
   }
 }

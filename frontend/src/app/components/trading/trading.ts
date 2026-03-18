@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExchangeService } from '../../services/exchange';
@@ -12,7 +12,12 @@ import { OrderRequest } from '../../models/exchange';
 })
 export class Trading {
   selectedTimeframe: string = '4H';
-  currentPrice = 150.00; // Mock current price from backend
+  // currentPrice = 150.00; // Mock current price from backend
+
+  @Input() companyId!: string;
+  @Input() currentPrice!: number;
+  @Input() userId!: number;
+
   order: OrderRequest = {
     userId: 1, // Get from Auth session
     companyId: 'AAPL',
@@ -22,6 +27,15 @@ export class Trading {
   };
 
   constructor(private exchangeService: ExchangeService) {}
+
+  ngOnInit() {
+    this.order.companyId = this.companyId;
+    this.order.price = this.currentPrice;
+  }
+
+  setType(type: 'BUY' | 'SELL') {
+    this.order.type = type;
+  }
 
   setTimeframe(time: string) {
     this.selectedTimeframe = time;
@@ -38,8 +52,12 @@ export class Trading {
     }
 
     this.exchangeService.placeOrder(this.order).subscribe({
-      next: (res) => alert('Order Placed Successfully!'),
-      error: (err) => alert('Order Failed: ' + err.error.message)
+      next: () => {
+        alert(`${this.order.type} order placed successfully!`);
+      },
+      error: (err) => {
+        alert('Order Failed: ' + (err.error?.message || 'Unknown error'));
+      }
     });
   }
 }
