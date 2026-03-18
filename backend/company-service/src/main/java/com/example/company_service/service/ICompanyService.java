@@ -15,4 +15,7 @@ public interface ICompanyService {
     Company updateCompany(String shortID, Company company);
 
     void deleteCompany(String shortID);
+
+    boolean updatePrice(String id, double newPrice);
+
 }
