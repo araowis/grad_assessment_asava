@@ -4,8 +4,8 @@
         <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6 min-h-[500px] flex flex-col">
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center gap-4">
-                    <span class="text-2xl font-bold text-white">{{order.companyId}} / USDT</span>
-                    <span class="text-emerald-400 font-mono text-xl">${{currentPrice}}</span>
+                    <span class="text-2xl font-bold text-white">{{order.companyId}} / INR</span>
+                    <span class="text-emerald-400 font-mono text-xl">INR {{currentPrice}}</span>
                 </div>
                 <div class="flex gap-2">
                     <button (click)="setTimeframe('1H')"
@@ -52,7 +52,7 @@
                     <label class="text-xs text-slate-500 uppercase font-bold mb-1 block">Price (USDT)</label>
                     <input [(ngModel)]="order.price" type="number"
                         class="w-full bg-[#0a0f1c] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
-                    <p class="text-[10px] mt-1 text-slate-500 italic">Max deviation allowed: 5% (${{(currentPrice *
+                    <p class="text-[10px] mt-1 text-slate-500 italic">Max deviation allowed: 5% (INR{{(currentPrice *
                         0.05).toFixed(2)}})</p>
                 </div>
 
@@ -65,7 +65,7 @@
                 <div class="pt-4">
                     <div class="flex justify-between text-sm mb-2">
                         <span class="text-slate-500">Total</span>
-                        <span class="text-white font-bold">${{(order.price * order.quantity).toFixed(2)}}</span>
+                        <span class="text-white font-bold">INR{{(order.price * order.quantity).toFixed(2)}}</span>
                     </div>
                     <button (click)="submitOrder()"
                         [class]="order.type === 'BUY' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'"

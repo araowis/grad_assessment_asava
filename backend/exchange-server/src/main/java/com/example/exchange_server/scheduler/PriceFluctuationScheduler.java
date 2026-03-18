@@ -21,7 +21,7 @@ public class PriceFluctuationScheduler {
     }
 
     // Run every 10 seconds (adjust as needed)
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 1000)
     public void fluctuatePrices() {
         List<CompanyDTO> companies = companyClient.getAllCompanies();
 

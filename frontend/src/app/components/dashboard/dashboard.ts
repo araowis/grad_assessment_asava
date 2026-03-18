@@ -16,7 +16,7 @@ export class Dashboard implements OnInit {
   stats: any[] = [];
   isLoading = true;
 
-  constructor(private companyService: CompanyService) {}
+  constructor(private companyService: CompanyService) { }
 
   ngOnInit(): void {
     this.loadCompanies();
@@ -37,9 +37,14 @@ export class Dashboard implements OnInit {
   }
 
   calculateStats() {
+    if (!this.companies || this.companies.length === 0) {
+      this.stats = [];
+      return;
+    }
+
     let totalValue = 0;
     let totalGain = 0;
-    let topGainer: Company = this.companies[0];
+    let topGainer: Company | undefined;
     let maxGainPercent = -Infinity;
 
     this.companies.forEach(c => {
@@ -50,7 +55,9 @@ export class Dashboard implements OnInit {
       totalGain += gain;
 
       const gainPercent =
-        ((c.currentPrice - c.openingPrice) / c.openingPrice) * 100;
+        c.openingPrice === 0
+          ? 0
+          : ((c.currentPrice - c.openingPrice) / c.openingPrice) * 100;
 
       if (gainPercent > maxGainPercent) {
         maxGainPercent = gainPercent;
@@ -75,7 +82,7 @@ export class Dashboard implements OnInit {
       },
       {
         label: 'Top Gainer',
-        value: topGainer ? topGainer.shortId : '-',
+        value: topGainer?.shortId || '-',
         sub: topGainer ? `${maxGainPercent.toFixed(2)}% today` : 'N/A',
         icon: '🔝',
         color: 'text-emerald-400'
