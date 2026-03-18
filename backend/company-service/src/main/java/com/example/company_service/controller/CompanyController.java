@@ -20,7 +20,7 @@ import com.example.company_service.models.Company;
 import com.example.company_service.service.ICompanyService;
 
 @RestController
-@RequestMapping("/companies")
+@RequestMapping("/api/v1/companies")
 public class CompanyController {
 
     @Autowired
