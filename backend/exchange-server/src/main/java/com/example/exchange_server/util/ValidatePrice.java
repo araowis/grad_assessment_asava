@@ -1,5 +1,8 @@
 package com.example.exchange_server.util;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class ValidatePrice {
 
     public double validatePrice(double oldPrice, double newPrice, double openingPrice) {

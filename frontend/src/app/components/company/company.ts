@@ -13,7 +13,7 @@ import { CompanyService } from '../../services/company';
 })
 export class CompanyComponent implements OnInit {
   companies: Company[] = [];
-  companyForm: Company = { shortId: '', name: '', noOfShare: 0, price: 0 };
+  companyForm: Company = { shortId: '', name: '', noOfShare: 0, currentPrice: 0, openingPrice: 0 };
   isEditMode = false;
 
   constructor(private companyService: CompanyService) {}
@@ -52,7 +52,7 @@ export class CompanyComponent implements OnInit {
   }
 
   resetForm() {
-    this.companyForm = { shortId: '', name: '', noOfShare: 0, price: 0 };
+    this.companyForm = { shortId: '', name: '', noOfShare: 0, currentPrice: 0, openingPrice: 0 };
     this.isEditMode = false;
   }
 }

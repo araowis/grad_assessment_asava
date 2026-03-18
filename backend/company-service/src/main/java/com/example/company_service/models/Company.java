@@ -17,11 +17,11 @@ public class Company {
     @Column(name = "no_of_share")
     private int noOfShare;
 
-    @Column(nullable = false)
-    private double openingPrice;
+    @Column(nullable = false, name = "opening_price")
+    private double openingPrice = 0.0;
 
-    @Column(nullable = false)
-    private double currentPrice;
+    @Column(nullable = false, name = "current_price")
+    private double currentPrice = 0.0;
 
     public Company() {
     }

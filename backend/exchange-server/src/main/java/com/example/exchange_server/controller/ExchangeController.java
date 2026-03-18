@@ -11,7 +11,7 @@ import com.example.exchange_server.dto.OrderRequestDTO;
 import com.example.exchange_server.service.OrderService;
 
 @RestController
-@RequestMapping("/exchange")
+@RequestMapping("/api/v1/exchange")
 public class ExchangeController {
 
     @Autowired

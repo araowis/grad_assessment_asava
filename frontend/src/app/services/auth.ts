@@ -8,7 +8,7 @@ import { ApiResponse ,AuthResponse, LoginDTO } from '../models/auth';
   providedIn: 'root',
 })
 export class Auth {
-  private baseUrl = 'http://localhost:8080/api/v1/auth';
+  private baseUrl = 'http://localhost:8088/api/v1/auth';
 
   constructor(private http: HttpClient) { }
 
