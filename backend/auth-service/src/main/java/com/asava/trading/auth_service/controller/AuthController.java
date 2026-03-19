@@ -41,6 +41,8 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
+    @PatchMapping
+
     /**
      * POST /api/v1/auth/refresh-token
      * Rotates the refresh token and returns a fresh access token.
@@ -76,5 +78,16 @@ public class AuthController {
 
         authService.logout(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
+    }
+
+    @PatchMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        authService.changePassword(userDetails.getUsername(), request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Password changed successfully"));
     }
 }

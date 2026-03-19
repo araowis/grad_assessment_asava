@@ -93,8 +93,7 @@ public class AuthService implements IAuthService {
 
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
-        RefreshToken existingToken =
-                refreshTokenService.verifyRefreshToken(request.getRefreshToken());
+        RefreshToken existingToken = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
 
         User user = existingToken.getUser();
 
@@ -130,7 +129,6 @@ public class AuthService implements IAuthService {
         log.info("User logged out: {}", username);
     }
 
-
     private AuthResponse buildAuthResponse(User user) {
         String accessToken = tokenStrategy.generateAccessToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
@@ -156,8 +154,24 @@ public class AuthService implements IAuthService {
         if (attempts >= MAX_FAILED_ATTEMPTS) {
             LocalDateTime lockUntil = LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES);
             userRepository.lockAccount(user.getId(), lockUntil);
-            log.warn("Account locked for user {} after {} failed attempts", 
-                     user.getUsername(), attempts);
+            log.warn("Account locked for user {} after {} failed attempts",
+                    user.getUsername(), attempts);
         }
+    }
+
+    @Override
+    public void changePassword(String username, ChangePasswordRequest request) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        auditService.loginSuccess(user.getId(), user.getUsername()); // or better: password change event
     }
 }

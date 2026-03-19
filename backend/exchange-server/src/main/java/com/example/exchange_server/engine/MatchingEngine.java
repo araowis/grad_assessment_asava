@@ -1,8 +1,6 @@
 package com.example.exchange_server.engine;
 
 import java.time.LocalDateTime;
-import java.util.PriorityQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -28,9 +26,6 @@ public class MatchingEngine {
     private final CompanyClient companyClient;
     private final ValidatePrice validatePrice;
 
-    // One lock per company: orders for different companies never block each other
-    private final ConcurrentHashMap<String, ReentrantLock> companyLocks = new ConcurrentHashMap<>();
-
     public MatchingEngine(OrderBook orderBook,
                           TradeRepository tradeRepository,
                           CompanyClient companyClient,
@@ -41,26 +36,23 @@ public class MatchingEngine {
         this.validatePrice = validatePrice;
     }
 
-    //  Entry point. Acquires a per-company lock so orders for different companies
-    //  run concurrently, while orders for the same company are still serialised
+    /**
+     * Acquires the per-company lock (owned by OrderBook, the single source of truth)
+     * then runs the matching loop. Orders for different companies never block each other.
+     */
     public void processOrder(Order order) {
-        ReentrantLock lock = companyLocks.computeIfAbsent(
-                order.getCompanyId(), k -> new ReentrantLock());
-
+        ReentrantLock lock = orderBook.lockFor(order.getCompanyId());
         lock.lock();
         try {
-            PriorityQueue<Order> buyQueue  = orderBook.getBuyOrders(order.getCompanyId());
-            PriorityQueue<Order> sellQueue = orderBook.getSellOrders(order.getCompanyId());
-
             if (order.getType() == OrderType.BUY) {
-                matchBuyOrder(order, sellQueue);
+                matchBuyOrder(order);
                 if (order.getQuantity() > 0) {
-                    buyQueue.add(order);
+                    orderBook.addBuy(order);
                 }
             } else {
-                matchSellOrder(order, buyQueue);
+                matchSellOrder(order);
                 if (order.getQuantity() > 0) {
-                    sellQueue.add(order);
+                    orderBook.addSell(order);
                 }
             }
         } finally {
@@ -68,14 +60,18 @@ public class MatchingEngine {
         }
     }
 
-    // Matching logic — pure in-memory
-    private void matchBuyOrder(Order buyOrder, PriorityQueue<Order> sellQueue) {
-        while (!sellQueue.isEmpty() && buyOrder.getQuantity() > 0) {
-            Order sellOrder = sellQueue.peek();
+    // -------------------------------------------------------------------------
+    // Matching loops — all queue access through OrderBook's API, inside the lock
+    // -------------------------------------------------------------------------
+
+    private void matchBuyOrder(Order buyOrder) {
+        String companyId = buyOrder.getCompanyId();
+        while (orderBook.hasSells(companyId) && buyOrder.getQuantity() > 0) {
+            Order sellOrder = orderBook.peekBestSell(companyId);
             if (sellOrder.getPrice() <= buyOrder.getPrice()) {
                 executeTrade(buyOrder, sellOrder);
                 if (sellOrder.getQuantity() == 0) {
-                    sellQueue.poll();
+                    orderBook.pollBestSell(companyId);
                 }
             } else {
                 break;
@@ -83,13 +79,14 @@ public class MatchingEngine {
         }
     }
 
-    private void matchSellOrder(Order sellOrder, PriorityQueue<Order> buyQueue) {
-        while (!buyQueue.isEmpty() && sellOrder.getQuantity() > 0) {
-            Order buyOrder = buyQueue.peek();
+    private void matchSellOrder(Order sellOrder) {
+        String companyId = sellOrder.getCompanyId();
+        while (orderBook.hasBuys(companyId) && sellOrder.getQuantity() > 0) {
+            Order buyOrder = orderBook.peekBestBuy(companyId);
             if (buyOrder.getPrice() >= sellOrder.getPrice()) {
                 executeTrade(buyOrder, sellOrder);
                 if (buyOrder.getQuantity() == 0) {
-                    buyQueue.poll();
+                    orderBook.pollBestBuy(companyId);
                 }
             } else {
                 break;
@@ -97,22 +94,12 @@ public class MatchingEngine {
         }
     }
 
-    /**
-     * Validate price BEFORE mutating quantities.
-     *
-     * If validation fails we skip this trade entirely — the order book is
-     * untouched and no corrupt state is produced. The exception is caught here
-     * so a bad price never propagates up and kills the whole match loop.
-     *
-     * After a successful match the quantities are updated in-memory (still
-     * inside the lock), then the expensive I/O work (Feign + DB write) is
-     * dispatched to an async thread so it never blocks order processing.
-     */
+    // Trade execution
     private void executeTrade(Order buy, Order sell) {
-        int qty        = Math.min(buy.getQuantity(), sell.getQuantity());
+        int qty = Math.min(buy.getQuantity(), sell.getQuantity());
         double tradePrice = sell.getPrice();
 
-        //Validate BEFORE any mutation
+        // validate
         double validPrice;
         try {
             CompanyDTO company = companyClient.getCompanyById(buy.getCompanyId());
@@ -122,23 +109,21 @@ public class MatchingEngine {
                     company.getOpeningPrice());
 
             if (maybePrice <= 0) {
-                log.warn("Trade skipped for company={}: tradePrice={} is outside the daily band",
+                log.warn("Trade skipped for company={}: tradePrice={} failed validation",
                         buy.getCompanyId(), tradePrice);
                 return;
             }
             validPrice = maybePrice;
         } catch (Exception e) {
-            // Company service unavailable, skip rather than corrupt the order book.
             log.error("Trade skipped for company={}: could not fetch company data — {}",
                     buy.getCompanyId(), e.getMessage());
             return;
         }
 
-        // Mutate quantities only after validation passes
         buy.setQuantity(buy.getQuantity() - qty);
         sell.setQuantity(sell.getQuantity() - qty);
 
-        // Build the trade record
+        // Trade record
         Trade trade = new Trade();
         trade.setBuyerId(buy.getUserId());
         trade.setSellerId(sell.getUserId());
@@ -147,14 +132,10 @@ public class MatchingEngine {
         trade.setPrice(validPrice);
         trade.setExecutedAt(LocalDateTime.now());
 
-        //Dispatch all I/O off the lock thread
+        // 4. All I/O dispatched off the lock thread.
         persistAndNotify(trade, buy.getCompanyId(), validPrice);
     }
 
-    /**
-     * Runs on the async executor configured in AsyncConfig.
-     * DB write + Feign price update happen here, off the matching-engine thread.
-     */
     @Async
     public void persistAndNotify(Trade trade, String companyId, double validPrice) {
         try {
@@ -162,7 +143,6 @@ public class MatchingEngine {
         } catch (Exception e) {
             log.error("Failed to persist trade for company={}: {}", companyId, e.getMessage(), e);
         }
-
         try {
             companyClient.updatePrice(companyId, validPrice);
         } catch (Exception e) {
