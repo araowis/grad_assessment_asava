@@ -1,0 +1,41 @@
+<div class="min-h-screen bg-[#0a0f1c] text-slate-200">
+    <nav
+        class="flex items-center justify-between px-8 py-4 border-b border-slate-800 bg-[#0a0f1c]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-8 h-8 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold">A</span>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-white">ASAVA</span>
+            </div>
+
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
+                <a routerLink="/dashboard" routerLinkActive="text-white"
+                    class="hover:text-white transition-colors">Dashboard</a>
+                <a routerLink="/trading" routerLinkActive="text-white"
+                    class="hover:text-white transition-colors">Trading</a>
+                <a routerLink="/wallet" routerLinkActive="text-white"
+                    class="hover:text-white transition-colors">Wallet</a>
+                <a routerLink="/settings" routerLinkActive="text-white"
+                    class="hover:text-white transition-colors">Settings</a>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <a routerLink="/login"
+                class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white cursor-pointer transition-colors">
+                Sign In
+            </a>
+
+            <button routerLink="/register"
+                class="px-5 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all active:scale-95">
+                Get Started
+            </button>
+        </div>
+    </nav>
+
+    <main class="p-8">
+        <router-outlet></router-outlet>
+    </main>
+</div>

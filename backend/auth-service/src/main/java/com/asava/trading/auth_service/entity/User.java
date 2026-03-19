@@ -1,19 +1,33 @@
 package com.asava.trading.auth_service.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_users_email", columnList = "email", unique = true),
-        @Index(name = "idx_users_username", columnList = "username", unique = true)
+    @Index(name = "idx_users_email", columnList = "email", unique = true),
+    @Index(name = "idx_users_username", columnList = "username", unique = true)
 })
 @Getter
 @Setter
@@ -80,7 +94,9 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        if (lockedUntil == null) return true;
+        if (lockedUntil == null) {
+            return true;
+        }
         return LocalDateTime.now().isAfter(lockedUntil);
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.company_service.dto.CompanyDTO;
@@ -20,7 +21,7 @@ import com.example.company_service.models.Company;
 import com.example.company_service.service.ICompanyService;
 
 @RestController
-@RequestMapping("/companies")
+@RequestMapping("/api/v1/companies")
 public class CompanyController {
 
     @Autowired
@@ -32,7 +33,8 @@ public class CompanyController {
         c.setShortId(dto.getShortId());
         c.setName(dto.getName());
         c.setNoOfShare(dto.getNoOfShare());
-        c.setPrice(dto.getPrice());
+        c.setCurrentPrice(dto.getCurrentPrice());
+        c.setOpeningPrice(dto.getOpeningPrice());
         return c;
     }
 
@@ -42,7 +44,8 @@ public class CompanyController {
                 company.getShortId(),
                 company.getName(),
                 company.getNoOfShare(),
-                company.getPrice()
+                company.getOpeningPrice(),
+                company.getCurrentPrice()
         );
     }
 
@@ -107,6 +110,21 @@ public class CompanyController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/price")
+    public ResponseEntity<String> updatePrice(
+            @PathVariable String id,
+            @RequestParam double price) {
+
+        boolean updated = service.updatePrice(id, price);
+
+        if (updated) {
+            return ResponseEntity.ok("Price updated successfully");
+        } else {
+            return ResponseEntity.badRequest()
+                    .body("Price update failed: exceeds allowed deviation limits");
         }
     }
 }
