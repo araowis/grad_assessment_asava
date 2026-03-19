@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Company {
-  id?: number;
+  id?: string;
   name: string;
   stockSymbol: string;
   totalStocks: number;
@@ -29,12 +29,6 @@ export class AdminService {
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  getStats(): Observable<AdminStats> {
-    return this.http.get<AdminStats>(`${this.base}/stats`, {
-      headers: this.headers(),
-    });
-  }
-
   getCompanies(): Observable<Company[]> {
     return this.http.get<Company[]>(`${this.base}/companies`, {
       headers: this.headers(),
@@ -47,17 +41,19 @@ export class AdminService {
     });
   }
 
-  deleteCompany(id: number): Observable<void> {
+  deleteCompany(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/companies/${id}`, {
       headers: this.headers(),
     });
   }
 
-  updatePrice(id: number, price: number): Observable<Company> {
-    return this.http.patch<Company>(
-      `${this.base}/companies/${id}/price`,
-      { price },
-      { headers: this.headers() }
-    );
+  updatePrice(id: string, price: number): Observable<Company> {
+    // Setting price as a query parameter (?price=...) as seen in Swagger
+    const params = new HttpParams().set('price', price.toString());
+
+    return this.http.put<Company>(`${this.base}/companies/${id}/price`, null, {
+      headers: this.headers(),
+      params: params,
+    });
   }
 }

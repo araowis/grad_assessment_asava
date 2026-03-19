@@ -1,6 +1,5 @@
 package com.asava.trading.auth_service.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,14 +16,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.asava.trading.auth_service.observability.CorrelationIdFilter;
 import com.asava.trading.auth_service.security.AuthenticationFilter;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -37,19 +33,18 @@ public class SecurityConfig {
     private final CorrelationIdFilter correlationIdFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui/index.html",
-            "/swagger-resources/**", 
-            "/swagger-resources", 
-            "/api-docs/**",
-            "/api/v1/auth/register",
-            "/api/v1/auth/login",
-            "/api/v1/auth/refresh-token",
-            "/api/v1/auth/validate",         
-            "/actuator/health",
-            "/actuator/info",
-    };
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui/index.html",
+        "/swagger-resources/**",
+        "/swagger-resources",
+        "/api-docs/**",
+        "/api/v1/auth/register",
+        "/api/v1/auth/login",
+        "/api/v1/auth/refresh-token",
+        "/api/v1/auth/validate",
+        "/actuator/health",
+        "/actuator/info",};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

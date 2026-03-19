@@ -10,6 +10,7 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/asava_trading
+    # url: jdbc:postgresql://localhost:5432/test
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:hydroarchon}
     driver-class-name: org.postgresql.Driver
