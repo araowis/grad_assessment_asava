@@ -2,17 +2,24 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Auth } from './auth';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class StockStreamService {
-  private readonly BASE_URL = 'http://localhost:8088/api/v1/stocks/stream';
+  private readonly BASE_URL = 'http://localhost:8088/api/v1/stocks';
 
-  constructor(private zone: NgZone, private authService: Auth) {}
+  constructor(private zone: NgZone, private authService: Auth, private http: HttpClient) {}
+
+  getHistory(companyId: string): Observable<{ price: number; recordedAt: string }[]> {
+    return this.http.get<{ price: number; recordedAt: string }[]>(
+      `${this.BASE_URL}/history/${companyId}`
+    );
+  }
 
   streamPrice(companyId: string): Observable<number> {
     return new Observable(observer => {
       const token = this.authService.getToken();
-      const url = `${this.BASE_URL}/${companyId}?token=${token}`;
+      const url = `${this.BASE_URL}/stream/${companyId}?token=${token}`;
 
       console.log('SSE connecting to:', url);        // add this
       console.log('Token present:', !!token);

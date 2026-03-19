@@ -13,11 +13,13 @@ import { ExchangeService } from '../../services/exchange';
 import { PortfolioService, PortfolioRequest } from '../../services/portfolio';
 import { StockStreamService } from '../../services/stock-stream';
 import { Subscription } from 'rxjs';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartData, ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-trading',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BaseChartDirective],
   templateUrl: './trading.html',
   styleUrl: './trading.css',
 })
@@ -34,6 +36,8 @@ export class Trading implements OnInit, OnChanges, OnDestroy {
   selectedTimeframe: string = '1D';
   isLoadingOrder = false;
   private priceSubscription?: Subscription;
+  priceHistory: { price: number; time: Date }[] = [];
+  private readonly MAX_HISTORY = 50;
 
   order = {
     userId: 0,
@@ -49,7 +53,7 @@ export class Trading implements OnInit, OnChanges, OnDestroy {
     private portfolioService: PortfolioService,
     private cdr: ChangeDetectorRef,
     private stockStream: StockStreamService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.updateOrderFromInputs();
@@ -63,8 +67,8 @@ export class Trading implements OnInit, OnChanges, OnDestroy {
       this.loadAssetActivity();
     }
     if (changes['companyId'] && !changes['companyId'].isFirstChange()) {
-        this.subscribeToPrice(); 
-      }
+      this.subscribeToPrice();
+    }
   }
 
   ngOnDestroy() {
@@ -72,17 +76,45 @@ export class Trading implements OnInit, OnChanges, OnDestroy {
   }
 
   private subscribeToPrice() {
-    this.priceSubscription?.unsubscribe(); // drop old stream
-    console.log('subscribeToPrice called, companyId:', this.companyId);
-
+    this.priceSubscription?.unsubscribe();
     if (!this.companyId) return;
 
-    this.priceSubscription = this.stockStream
-      .streamPrice(this.companyId)
-      .subscribe(price => {
-        this.currentPrice = price;
+    // First load historical data, then start SSE
+    this.stockStream.getHistory(this.companyId).subscribe({
+      next: (history) => {
+        this.priceHistory = history.map(h => ({
+          price: h.price,
+          time: new Date(h.recordedAt)
+        }));
         this.cdr.detectChanges();
-      });
+
+        // Now start live stream appending on top of history
+        this.priceSubscription = this.stockStream
+          .streamPrice(this.companyId)
+          .subscribe(price => {
+            this.currentPrice = price;
+            this.priceHistory = [
+              ...this.priceHistory.slice(-(this.MAX_HISTORY - 1)),
+              { price, time: new Date() }
+            ];
+            this.cdr.detectChanges();
+          });
+      },
+      error: (err) => {
+        console.error('Failed to load price history:', err);
+        // Fall back to just the live stream if history fails
+        this.priceSubscription = this.stockStream
+          .streamPrice(this.companyId)
+          .subscribe(price => {
+            this.currentPrice = price;
+            this.priceHistory = [
+              ...this.priceHistory.slice(-(this.MAX_HISTORY - 1)),
+              { price, time: new Date() }
+            ];
+            this.cdr.detectChanges();
+          });
+      }
+    });
   }
 
   setTimeframe(time: string) {
@@ -114,14 +146,14 @@ export class Trading implements OnInit, OnChanges, OnDestroy {
   }
 
   private updateOrderFromInputs() {
-  if (this.companyId) this.order.companyId = this.companyId;
-  if (this.userId) this.order.userId = this.userId;
+    if (this.companyId) this.order.companyId = this.companyId;
+    if (this.userId) this.order.userId = this.userId;
 
-  if (this.order.price === 0 && this.currentPrice) {
-    this.order.price = this.roundPrice(this.currentPrice);
+    if (this.order.price === 0 && this.currentPrice) {
+      this.order.price = this.roundPrice(this.currentPrice);
+    }
+    this.cdr.detectChanges();
   }
-  this.cdr.detectChanges();
-}
 
   submitOrder() {
     this.order.companyId = this.companyId;
@@ -172,4 +204,68 @@ export class Trading implements OnInit, OnChanges, OnDestroy {
       },
     });
   }
+
+  get chartData(): ChartData<'line'> {
+    return {
+      labels: this.priceHistory.map(p =>
+        p.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      ),
+      datasets: [{
+        data: this.priceHistory.map(p => p.price),
+        borderColor: this.isPriceUp ? '#34d399' : '#f43f5e',
+        backgroundColor: this.isPriceUp
+          ? 'rgba(52, 211, 153, 0.08)'
+          : 'rgba(244, 63, 94, 0.08)',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: true,
+        tension: 0.4,
+      }]
+    };
+  }
+
+  get isPriceUp(): boolean {
+    if (this.priceHistory.length < 2) return true;
+    return this.priceHistory[this.priceHistory.length - 1].price >=
+      this.priceHistory[this.priceHistory.length - 2].price;
+  }
+
+  chartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 300 },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: '#1e293b',
+        titleColor: '#94a3b8',
+        bodyColor: '#f1f5f9',
+        callbacks: {
+          label: ctx => `₹${ctx.parsed.y?.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(148,163,184,0.05)' },
+        ticks: {
+          color: '#475569',
+          maxTicksLimit: 6,
+          font: { size: 10 }
+        }
+      },
+      y: {
+        position: 'right',
+        grid: { color: 'rgba(148,163,184,0.05)' },
+        ticks: {
+          color: '#475569',
+          font: { size: 10 },
+          callback: val => `₹${Number(val).toFixed(2)}`
+        }
+      }
+    }
+  };
 }

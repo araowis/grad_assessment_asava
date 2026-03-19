@@ -2,6 +2,8 @@ package com.example.company_service.models;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +23,7 @@ public class StockPriceHistory {
  
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
+    @JsonIgnore
     private Company company;
 
     public Long getId() {
@@ -55,3 +58,5 @@ public class StockPriceHistory {
         this.company = company;
     }
 }
+
+
