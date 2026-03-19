@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ProfileStateServiceTs } from './profile-state.service.ts';
+import { ProfileStateServiceTs } from './portfolio-state.service.js';
 
 describe('ProfileStateServiceTs', () => {
   let service: ProfileStateServiceTs;

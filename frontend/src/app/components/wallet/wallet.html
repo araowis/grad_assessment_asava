@@ -1,4 +1,61 @@
-<div class="space-y-8 p-6 bg-[#0a0f1c] min-h-screen">
+<div class="space-y-8 p-6 bg-[#0a0f1c] min-h-screen text-slate-300">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-white tracking-tight">Investment Wallet</h1>
+      <p class="text-slate-500 text-sm">Portfolio Management & Trade Ledger</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex bg-[#111827] p-1 rounded-xl border border-slate-800">
+        <button
+          *ngFor="let id of portfolioIds"
+          (click)="changePortfolio(id)"
+          [class]="selectedPortfolioId === id ? 'bg-blue-600 text-white' : 'text-slate-500'"
+          class="px-4 py-2 rounded-lg text-xs font-bold transition-all"
+        >
+          P{{ id }}
+        </button>
+      </div>
+      <button
+        (click)="addNewPortfolio()"
+        class="p-2 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl border border-slate-700"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-[#111827] border border-slate-800 p-6 rounded-2xl">
+      <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest"
+        >Total Market Value</span
+      >
+      <div class="text-3xl font-black text-white mt-1">₹{{ totalBalance | number: '1.2-2' }}</div>
+      <div
+        [ngClass]="totalPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'"
+        class="text-xs font-bold mt-2"
+      >
+        {{ totalPnL >= 0 ? '↑' : '↓' }} ₹{{ totalPnL | number: '1.2-2' }} Total P&L
+      </div>
+    </div>
+    <div class="bg-[#111827] border border-slate-800 p-6 rounded-2xl">
+      <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest"
+        >Holdings count</span
+      >
+      <div class="text-3xl font-black text-white mt-1">{{ holdings.length }} Assets</div>
+      <div class="text-slate-500 text-xs mt-2 italic">Active in P{{ selectedPortfolioId }}</div>
+    </div>
+    <div class="bg-blue-600/10 border border-blue-500/20 p-6 rounded-2xl">
+      <span class="text-blue-400 text-[10px] font-bold uppercase tracking-widest"
+        >Account Status</span
+      >
+      <div class="text-3xl font-black text-blue-400 mt-1">Verified</div>
+      <div class="text-blue-400/60 text-xs mt-2">Trading Enabled</div>
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 space-y-8">
       <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6">
@@ -6,7 +63,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left">
             <thead>
-              <tr class="text-slate-500 text-xs uppercase border-b border-slate-800">
+              <tr class="text-slate-500 text-[10px] uppercase border-b border-slate-800">
                 <th class="pb-4">Asset</th>
                 <th class="pb-4">Qty</th>
                 <th class="pb-4">Market Value</th>
@@ -23,18 +80,22 @@
                   <div class="font-bold text-white group-hover:text-blue-400">
                     {{ stock.companyId }}
                   </div>
-                  <div class="text-[10px] text-slate-500">Click to trade/limit</div>
+                  <div class="text-[9px] text-slate-600 uppercase font-bold">Manage Asset</div>
                 </td>
-                <td class="py-4 text-slate-300 font-mono">{{ stock.quantity }}</td>
+                <td class="py-4 font-mono text-sm">{{ stock.quantity }}</td>
                 <td class="py-4 text-white font-bold">
-                  ₹{{ stock.marketValue || 0 | number: '1.2-2' }}
+                  ₹{{ stock.marketValue | number: '1.2-2' }}
                 </td>
                 <td
                   class="py-4 text-right font-bold"
-                  [ngClass]="(stock.pnl || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'"
+                  [ngClass]="stock.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'"
                 >
-                  {{ (stock.pnl || 0) >= 0 ? '+' : ''
-                  }}{{ stock.pnlPercent || 0 | number: '1.1-2' }}%
+                  {{ stock.pnl >= 0 ? '+' : '' }}{{ stock.pnlPercent | number: '1.1-2' }}%
+                </td>
+              </tr>
+              <tr *ngIf="holdings.length === 0">
+                <td colspan="4" class="py-12 text-center text-slate-600 italic">
+                  No assets in this portfolio.
                 </td>
               </tr>
             </tbody>
@@ -43,16 +104,20 @@
       </div>
 
       <div *ngIf="selectedStock" class="animate-in slide-in-from-bottom-4 duration-500">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <div class="flex items-center justify-between mb-4 px-2">
+          <h3
+            class="text-white font-bold uppercase tracking-widest text-sm flex items-center gap-2"
+          >
             <span class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-            Trading Terminal: {{ selectedStock.symbol }}
+            Terminal: {{ selectedStock.symbol }}
           </h3>
-          <button (click)="selectedStock = null" class="text-slate-500 hover:text-white text-xs">
-            Close Terminal
+          <button
+            (click)="selectedStock = null"
+            class="text-slate-500 hover:text-white text-xs font-bold uppercase"
+          >
+            Close
           </button>
         </div>
-
         <app-trading
           [userId]="userId"
           [companyId]="selectedStock.symbol"
@@ -64,6 +129,37 @@
       </div>
     </div>
 
-    <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6"></div>
+    <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+      <h2 class="text-xl font-bold text-white mb-6">Recent Activity</h2>
+      <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+        <div
+          *ngFor="let tx of transactions"
+          class="p-4 bg-[#0a0f1c] border border-slate-900 rounded-xl flex justify-between items-center group hover:border-slate-700 transition-all"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              [class]="
+                tx.type === 'SELL'
+                  ? 'bg-rose-500/10 text-rose-500'
+                  : 'bg-emerald-500/10 text-emerald-500'
+              "
+              class="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-black border border-white/5"
+            >
+              {{ tx.type }}
+            </div>
+            <div>
+              <div class="text-sm font-bold text-white uppercase">{{ tx.companyId }}</div>
+              <div class="text-[9px] text-slate-500 uppercase">
+                {{ tx.date | date: 'MMM dd, HH:mm' }}
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-bold text-white">₹{{ tx.price | number: '1.1-1' }}</div>
+            <div class="text-[8px] font-bold text-slate-600 uppercase">{{ tx.status }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

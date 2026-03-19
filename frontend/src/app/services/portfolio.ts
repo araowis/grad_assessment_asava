@@ -8,6 +8,7 @@ export interface PortfolioRequest {
   price: number;
   quantity: number;
   stopLoss?: number;
+  type: string; // 🟢 Add this to match Exchange logic
 }
 
 export interface PortfolioResponse {

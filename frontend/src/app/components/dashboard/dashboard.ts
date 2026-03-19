@@ -5,7 +5,7 @@ import { Auth } from '../../services/auth';
 import { Company } from '../../models/company';
 import { Trading } from '../trading/trading';
 import { FormsModule } from '@angular/forms';
-import { PortfolioStateService } from '../../services/profile-state.service.ts';
+import { PortfolioStateService } from '../../services/portfolio-state.service';
 
 @Component({
   selector: 'app-dashboard',

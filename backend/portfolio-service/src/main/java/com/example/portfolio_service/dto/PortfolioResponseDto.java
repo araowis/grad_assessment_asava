@@ -10,4 +10,5 @@ public class PortfolioResponseDto {
     private String companyId;
     private int quantity;
     private double averageBuyPrice;
+    private String orderType;
 }
