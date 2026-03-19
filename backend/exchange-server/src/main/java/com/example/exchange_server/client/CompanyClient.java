@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.exchange_server.dto.CompanyDTO;
 import com.example.exchange_server.dto.PriceUpdateDTO;
 
-@FeignClient(name = "company-service")
+@FeignClient(name = "COMPANY-SERVICE")
 public interface CompanyClient {
 
     @GetMapping("/api/v1/companies")

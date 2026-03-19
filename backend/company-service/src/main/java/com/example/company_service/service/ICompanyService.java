@@ -2,6 +2,7 @@ package com.example.company_service.service;
 
 import java.util.List;
 
+import com.example.company_service.dto.CompanyDTO;
 import com.example.company_service.models.Company;
 
 public interface ICompanyService {
@@ -17,5 +18,7 @@ public interface ICompanyService {
     void deleteCompany(String shortID);
 
     boolean updatePrice(String id, double newPrice);
+
+    public void batchUpdatePrices(List<CompanyDTO> dtos);
 
 }

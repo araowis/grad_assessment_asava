@@ -30,8 +30,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/v1/auth/login",
             "/api/v1/auth/register",
-            "/api/v1/auth/refresh-token"
-    );
+            "/api/v1/auth/refresh-token");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -53,18 +52,22 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authHeader == null) {
-            log.warn("Missing Authorization header for path: {}", path);
+        // ADD: fallback to query param for SSE (EventSource can't set headers)
+        String token = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (exchange.getRequest().getQueryParams().containsKey("token")) {
+            token = exchange.getRequest().getQueryParams().getFirst("token");
+            log.info("JWT resolved from query param for SSE path: {}", path);
+        } else {
+            if (authHeader == null) {
+                log.warn("Missing Authorization header for path: {}", path);
+            } else {
+                log.warn("Invalid Authorization header format for path: {} | Header: {}", path, authHeader);
+            }
             return unauthorized(exchange);
         }
-
-        if (!authHeader.startsWith("Bearer ")) {
-            log.warn("Invalid Authorization header format for path: {} | Header: {}", path, authHeader);
-            return unauthorized(exchange);
-        }
-
-        String token = authHeader.substring(7);
-        log.info("JWT received: {}", token);
 
         if (!jwtUtil.validate(token)) {
             log.warn("JWT validation failed for path: {} | Token: {}", path, token);

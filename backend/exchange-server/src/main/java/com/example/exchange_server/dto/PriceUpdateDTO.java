@@ -1,5 +1,7 @@
 package com.example.exchange_server.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PriceUpdateDTO {
-    private String companyId;
+    private String shortId;
+    @JsonProperty("currentPrice")
     private double newPrice;
 }
