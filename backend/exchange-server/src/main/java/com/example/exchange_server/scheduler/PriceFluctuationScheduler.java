@@ -1,7 +1,9 @@
 package com.example.exchange_server.scheduler;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component;
 import com.example.exchange_server.client.CompanyClient;
 import com.example.exchange_server.dto.CompanyDTO;
 import com.example.exchange_server.dto.PriceUpdateDTO;
+
+import jakarta.annotation.PostConstruct;
 
 /**
  * Simulates natural market price drift for all listed companies.
@@ -30,30 +34,47 @@ public class PriceFluctuationScheduler {
     private final CompanyClient companyClient;
     private final Random random = new Random();
 
+    private final Map<String, Double> livePrices = new ConcurrentHashMap<>();
+    private final Map<String, Double> openingPrices = new ConcurrentHashMap<>();
+
     public PriceFluctuationScheduler(CompanyClient companyClient) {
         this.companyClient = companyClient;
     }
 
+    @PostConstruct
+    public void seedPrices() {
+        try {
+            List<CompanyDTO> companies = companyClient.getAllCompanies();
+            if (companies != null) {
+                companies.forEach(c -> {
+                    livePrices.put(c.getShortId(), c.getCurrentPrice());
+                    openingPrices.put(c.getShortId(), c.getOpeningPrice());
+                    log.info("Seeded {} at opening={} current={}", 
+                        c.getShortId(), c.getOpeningPrice(), c.getCurrentPrice());
+                });
+            }
+        } catch (Exception e) {
+            log.error("Failed to seed prices on startup: {}", e.getMessage());
+        }
+    }
+
     @Scheduled(fixedRate = 5_000)
     public void fluctuatePrices() {
-        List<CompanyDTO> companies;
-        try {
-            companies = companyClient.getAllCompanies();
-        } catch (Exception e) {
-            log.error("Failed to fetch companies for price fluctuation: {}", e.getMessage());
+        if (livePrices.isEmpty()) {
+            log.warn("No prices seeded yet, retrying seed...");
+            seedPrices();
             return;
         }
 
-        if (companies == null || companies.isEmpty()) {
-            return;
-        }
-
-        // Compute all new prices locally
-        List<PriceUpdateDTO> updates = companies.stream()
-                .map(this::computeUpdate)
+        // Compute all new prices from in-memory state — no fetch needed
+        List<PriceUpdateDTO> updates = livePrices.entrySet().stream()
+                .map(entry -> computeUpdate(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        // One Feign call for the entire batch.
+        // Update in-memory state immediately
+        updates.forEach(u -> livePrices.put(u.getShortId(), u.getNewPrice()));
+
+        // Tell company-service to record it
         try {
             companyClient.batchUpdatePrices(updates);
             log.debug("Batch price update sent for {} companies", updates.size());
@@ -66,18 +87,16 @@ public class PriceFluctuationScheduler {
      * Computes the next simulated price for one company.
      * No I/O
      */
-    private PriceUpdateDTO computeUpdate(CompanyDTO company) {
-        double current = company.getCurrentPrice();
-        double opening = company.getOpeningPrice();
+    private PriceUpdateDTO computeUpdate(String shortId, double current) {
+        double opening = openingPrices.getOrDefault(shortId, current);
 
         double changePercent = (random.nextDouble() - 0.5) * 2 * MAX_TICK_PCT;
         double newPrice = current + current * changePercent;
 
-        // Hard-clamp to the daily circuit-breaker band.
         double upper = opening * (1.0 + MAX_DAILY_PCT);
         double lower = opening * (1.0 - MAX_DAILY_PCT);
         newPrice = Math.max(lower, Math.min(upper, newPrice));
 
-        return new PriceUpdateDTO(company.getShortId(), newPrice);
+        return new PriceUpdateDTO(shortId, newPrice);
     }
 }

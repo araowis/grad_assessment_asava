@@ -121,42 +121,26 @@ public class CompanyService implements ICompanyService {
 
     @Transactional
     public void batchUpdatePrices(List<CompanyDTO> dtos) {
-        List<String> ids = dtos.stream()
-                .map(CompanyDTO::getShortId)
-                .toList();
-
-        log.info("Batch price update started for {} companies", ids.size());
+        List<String> ids = dtos.stream().map(CompanyDTO::getShortId).toList();
+        log.info("Batch price record started for {} companies: {}", ids.size(), ids);
 
         List<Company> companies = companyRepo.findByShortIdIn(ids);
+        log.info("Found {} matching companies in DB", companies.size());
 
         Map<String, Company> companyMap = companies.stream()
                 .collect(Collectors.toMap(Company::getShortId, c -> c));
 
-        List<Company> updatedCompanies = new ArrayList<>();
-
         for (CompanyDTO dto : dtos) {
             Company company = companyMap.get(dto.getShortId());
             if (company == null) {
-                log.warn("Company not found in DB for shortId: {}", dto.getShortId());
+                log.warn("No DB record found for shortId: {}", dto.getShortId());
                 continue;
             }
-
-            double openingPrice = company.getOpeningPrice();
-            double newPrice = dto.getCurrentPrice();
-
-            if (newPrice >= openingPrice * 0.8 && newPrice <= openingPrice * 1.2) {
-                log.debug("Updating {} | old: {} → new: {}", dto.getShortId(), company.getCurrentPrice(), newPrice);
-                company.setCurrentPrice(newPrice);
-                updatedCompanies.add(company);
-                historyService.updateCompanyHistoryPrice(dto.getShortId(), newPrice, company);
-            } else {
-                log.warn("Price rejected for {} | new: {} outside circuit breaker band [{}, {}]",
-                        dto.getShortId(), newPrice, openingPrice * 0.8, openingPrice * 1.2);
-            }
+            log.info("Recording price for {} | price: {}", dto.getShortId(), dto.getCurrentPrice());
+            historyService.updateCompanyHistoryPrice(dto.getShortId(), dto.getCurrentPrice(), company);
         }
 
-        companyRepo.saveAll(updatedCompanies);
-        log.info("Batch price update completed — {} companies updated", updatedCompanies.size());
+        log.info("Batch price record completed for {} companies", dtos.size());
     }
 
 }
