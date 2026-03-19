@@ -1,4 +1,4 @@
-package com.asava.trading.auth_service.security;
+package com.asava.trading.auth_service.security.implementation;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,39 +15,45 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.asava.trading.auth_service.observability.implementation.AuditService;
+import com.asava.trading.auth_service.security.AuthenticationFilter;
+import com.asava.trading.auth_service.security.TokenStrategy;
+
 import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter
+        implements AuthenticationFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenStrategy tokenStrategy;
     private final UserDetailsService userDetailsService;
+    private final AuditService auditService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
 
         try {
             String jwt = extractJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-                String username = jwtTokenProvider.extractUsername(jwt);
+            if (StringUtils.hasText(jwt) && tokenStrategy.validateToken(jwt)) {
+                String username = tokenStrategy.extractUsername(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
-            log.error("Could not set user authentication in security context: {}", ex.getMessage());
+            auditService.tokenValidationFailed(ex.getMessage());
+            log.error("auth_error message={}", ex.getMessage());
         }
 
         filterChain.doFilter(request, response);

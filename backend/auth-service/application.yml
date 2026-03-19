@@ -10,6 +10,7 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/asava_trading
+    # url: jdbc:postgresql://localhost:5432/test
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:hydroarchon}
     driver-class-name: org.postgresql.Driver
@@ -20,8 +21,12 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  output:
+    ansi:
+      enabled: always
 
 eureka:
   client:
@@ -36,8 +41,8 @@ eureka:
 
 jwt:
   secret: ${JWT_SECRET:dGVzdHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHkxMjM0NTY3ODk=}
-  expiration: 86400000 
-  refresh-expiration: 604800000 
+  expiration: 86400000
+  refresh-expiration: 604800000
 
 management:
   endpoints:
@@ -50,5 +55,23 @@ management:
 
 logging:
   level:
-    com.tradingportal.authservice: DEBUG
+    com.asava.trading.auth_service: DEBUG
     org.springframework.security: INFO
+  pattern:
+    level: "%5p [corrId=%X{correlationId}]"
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      authService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+
+  retry:
+    instances:
+      authService:
+        maxAttempts: 3
+        waitDuration: 500ms

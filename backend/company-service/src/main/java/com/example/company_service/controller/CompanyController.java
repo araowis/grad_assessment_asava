@@ -45,8 +45,7 @@ public class CompanyController {
                 company.getName(),
                 company.getNoOfShare(),
                 company.getOpeningPrice(),
-                company.getCurrentPrice()
-        );
+                company.getCurrentPrice());
     }
 
     // ➕Add Company
@@ -126,5 +125,13 @@ public class CompanyController {
             return ResponseEntity.badRequest()
                     .body("Price update failed: exceeds allowed deviation limits");
         }
+    }
+
+    @PutMapping("/prices")
+    public ResponseEntity<?> batchUpdatePrices(@RequestBody List<CompanyDTO> companies) {
+
+        service.batchUpdatePrices(companies);
+
+        return ResponseEntity.ok("Batch price update completed");
     }
 }

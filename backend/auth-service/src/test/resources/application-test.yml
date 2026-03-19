@@ -14,6 +14,4 @@ eureka:
     fetch-registry: false
 
 jwt:
-  secret: dGVzdHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHkxMjM0NTY3ODk=
-  expiration: 86400000
-  refresh-expiration: 604800000
+  secret: test-secret-key-for-testing-only

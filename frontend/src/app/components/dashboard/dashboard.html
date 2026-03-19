@@ -1,61 +1,140 @@
-<div class="space-y-8">
-  <div>
-    <h1 class="text-3xl font-bold text-white">Portfolio Overview</h1>
-    <p class="text-slate-400 mt-1">Track your investments and explore market opportunities</p>
+<div class="space-y-8 p-6">
+  <div class="flex items-start justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-white tracking-tight">
+        {{ selectedCompany ? selectedCompany.name : 'Portfolio Overview' }}
+      </h1>
+      <p class="text-slate-400 mt-1">
+        {{
+          selectedCompany
+            ? 'Real-time market analysis and trading'
+            : 'Track your investments and explore market opportunities'
+        }}
+      </p>
+    </div>
+
+    <button
+      *ngIf="selectedCompany"
+      (click)="clearSelection()"
+      class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+        />
+      </svg>
+      Back to Overview
+    </button>
   </div>
 
-  <div *ngIf="!isLoading; else loading">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div *ngFor="let stat of stats"
-        class="bg-[#111827] border border-slate-800 p-6 rounded-2xl hover:border-slate-700 transition-all">
-        <div class="flex justify-between items-start mb-4">
-          <span class="text-slate-400 font-medium">{{stat.label}}</span>
-          <span [class]="stat.color">{{stat.icon}}</span>
+  <div
+    *ngIf="isLoading; else dashboardContent"
+    class="flex flex-col items-center justify-center h-64 space-y-4"
+  >
+    <div
+      class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+    ></div>
+    <p class="text-slate-400 animate-pulse text-sm">Synchronizing market data...</p>
+  </div>
+
+  <ng-template #dashboardContent>
+    <div *ngIf="!selectedCompany" class="space-y-8 animate-in fade-in duration-500">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          *ngFor="let stat of stats"
+          class="bg-[#111827] border border-slate-800 p-6 rounded-2xl shadow-xl"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">{{
+              stat.label
+            }}</span>
+            <span [class]="stat.color" class="text-xl">{{ stat.icon }}</span>
+          </div>
+          <div class="text-3xl font-extrabold text-white mb-1 tabular-nums">{{ stat.value }}</div>
+          <div class="text-sm font-medium" [class]="stat.color">{{ stat.sub }}</div>
         </div>
-        <div class="text-2xl font-bold text-white mb-1">{{stat.value}}</div>
-        <div class="text-sm" [class]="stat.color">{{stat.sub}}</div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 bg-[#111827] border border-slate-800 rounded-2xl p-6 shadow-sm">
+          <h2 class="text-xl font-bold text-white mb-6">Market Overview</h2>
+          <div class="space-y-3">
+            <div
+              *ngFor="let item of formattedMarketData"
+              (click)="selectCompany(item)"
+              class="flex items-center justify-between p-4 bg-[#0a0f1c] rounded-xl border border-slate-900 hover:bg-slate-800/40 hover:border-blue-500/50 transition-all cursor-pointer group"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  [ngClass]="item.bg"
+                  class="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white border border-white/5"
+                >
+                  {{ item.symbol?.[0] }}
+                </div>
+                <div>
+                  <div
+                    class="font-bold text-white tracking-wide group-hover:text-blue-400 transition-colors"
+                  >
+                    {{ item.symbol }}
+                  </div>
+                  <div class="text-xs text-slate-500">{{ item.name }}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-white tabular-nums">{{ item.price }}</div>
+                <div class="text-xs font-mono font-bold" [class]="item.color">
+                  {{ item.change }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-[#111827] border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center"
+        >
+          <h2 class="text-xl font-bold text-white mb-8 self-start">Asset Allocation</h2>
+          <div
+            class="w-48 h-48 rounded-full border-[12px] border-slate-800 flex items-center justify-center relative"
+          >
+            <div class="text-center">
+              <div class="text-4xl font-black text-white italic">72%</div>
+              <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold mt-1">
+                Equity
+              </div>
+            </div>
+            <div
+              class="absolute inset-0 border-[12px] border-blue-500 rounded-full border-t-transparent -rotate-45"
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <ng-template #loading>
-    <div class="text-white">Loading...</div>
+    <div *ngIf="selectedCompany" class="animate-in slide-in-from-bottom-4 duration-500">
+      <div *ngIf="currentUserId > 0 && selectedSymbol; else dataError">
+        <app-trading
+          [userId]="currentUserId"
+          [companyId]="selectedSymbol"
+          [currentPrice]="selectedPrice"
+          [mode]="'portfolio'"
+        >
+        </app-trading>
+      </div>
+    </div>
   </ng-template>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <div class="lg:col-span-2 bg-[#111827] border border-slate-800 rounded-2xl p-6">
-      <h2 class="text-xl font-bold text-white mb-6">Market Overview</h2>
-      <div class="space-y-4">
-        <div *ngFor="let item of marketData || []"
-          class="flex items-center justify-between p-4 bg-[#0a0f1c] rounded-xl border border-slate-900">
-          <div class="flex items-center gap-4">
-            <div [class]="item.color"
-              class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white">
-              {{item.symbol?.[0]}}
-            </div>
-            <div>
-              <div class="font-bold text-white">{{item.symbol}}</div>
-              <div class="text-xs text-slate-500">{{item.name}}</div>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-white">{{item.price}}</div>
-            <div class="text-xs" [class]="item.change?.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'">
-              {{item.change}}
-            </div>
-          </div>
-        </div>
-      </div>
+  <ng-template #dataError>
+    <div
+      class="flex flex-col items-center justify-center h-64 bg-[#111827] border border-slate-800 rounded-2xl"
+    >
+      <p class="text-rose-400 font-bold">Failed to load trading session.</p>
+      <p class="text-slate-500 text-sm mt-1">
+        Please ensure you are logged in and the asset is valid.
+      </p>
     </div>
-
-    <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6">
-      <h2 class="text-xl font-bold text-white mb-6">Asset Allocation</h2>
-      <div class="aspect-square rounded-full border-8 border-slate-800 flex items-center justify-center relative">
-        <div class="text-center">
-          <div class="text-3xl font-bold text-white">72%</div>
-          <div class="text-xs text-slate-500 uppercase tracking-widest">Crypto</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </ng-template>
 </div>

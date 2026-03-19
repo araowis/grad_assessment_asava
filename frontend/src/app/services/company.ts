@@ -2,14 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Company } from '../models/company';
+
 @Injectable({
   providedIn: 'root',
 })
-
 export class CompanyService {
   private baseUrl = 'http://localhost:8088/api/v1/companies';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
+
+  getCompanyById(shortId: string): Observable<Company> {
+    return this.http.get<Company>(`${this.baseUrl}/${shortId}`);
+  }
 
   getAllCompanies(): Observable<Company[]> {
     return this.http.get<Company[]>(this.baseUrl);

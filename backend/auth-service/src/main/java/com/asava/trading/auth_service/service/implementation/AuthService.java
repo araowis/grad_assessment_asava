@@ -6,8 +6,9 @@ import com.asava.trading.auth_service.dto.*;
 import com.asava.trading.auth_service.entity.RefreshToken;
 import com.asava.trading.auth_service.entity.User;
 import com.asava.trading.auth_service.exception.*;
+import com.asava.trading.auth_service.observability.implementation.AuditService;
 import com.asava.trading.auth_service.repository.UserRepository;
-import com.asava.trading.auth_service.security.JwtTokenProvider;
+import com.asava.trading.auth_service.security.TokenStrategy;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +29,10 @@ public class AuthService implements IAuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenStrategy tokenStrategy;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
+    private final AuditService auditService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -85,14 +87,13 @@ public class AuthService implements IAuthService {
         userRepository.resetFailedAttempts(user.getId());
         userRepository.updateLastLogin(user.getId(), LocalDateTime.now());
 
-        log.info("User logged in: {}", user.getUsername());
+        auditService.loginSuccess(user.getId(), user.getUsername());
         return buildAuthResponse(user);
     }
 
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
-        RefreshToken existingToken =
-                refreshTokenService.verifyRefreshToken(request.getRefreshToken());
+        RefreshToken existingToken = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
 
         User user = existingToken.getUser();
 
@@ -105,7 +106,7 @@ public class AuthService implements IAuthService {
     // Token Validation for API Gateway
 
     public TokenValidationResponse validateToken(String token) {
-        if (!jwtTokenProvider.validateToken(token)) {
+        if (!tokenStrategy.validateToken(token)) {
             return TokenValidationResponse.builder()
                     .valid(false)
                     .message("Token is invalid or expired")
@@ -114,10 +115,10 @@ public class AuthService implements IAuthService {
 
         return TokenValidationResponse.builder()
                 .valid(true)
-                .userId(jwtTokenProvider.extractUserId(token))
-                .username(jwtTokenProvider.extractUsername(token))
-                .email(jwtTokenProvider.extractEmail(token))
-                .role(jwtTokenProvider.extractRole(token))
+                .userId(tokenStrategy.extractUserId(token))
+                .username(tokenStrategy.extractUsername(token))
+                .email(tokenStrategy.extractEmail(token))
+                .role(tokenStrategy.extractRole(token))
                 .build();
     }
 
@@ -128,15 +129,14 @@ public class AuthService implements IAuthService {
         log.info("User logged out: {}", username);
     }
 
-
     private AuthResponse buildAuthResponse(User user) {
-        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String accessToken = tokenStrategy.generateAccessToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getToken())
-                .expiresIn(jwtTokenProvider.getExpirationInSeconds())
+                .expiresIn(tokenStrategy.getExpirationInSeconds())
                 .user(AuthResponse.UserInfo.builder()
                         .id(user.getId())
                         .username(user.getUsername())
@@ -154,8 +154,24 @@ public class AuthService implements IAuthService {
         if (attempts >= MAX_FAILED_ATTEMPTS) {
             LocalDateTime lockUntil = LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES);
             userRepository.lockAccount(user.getId(), lockUntil);
-            log.warn("Account locked for user {} after {} failed attempts", 
-                     user.getUsername(), attempts);
+            log.warn("Account locked for user {} after {} failed attempts",
+                    user.getUsername(), attempts);
         }
+    }
+
+    @Override
+    public void changePassword(String username, ChangePasswordRequest request) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        auditService.loginSuccess(user.getId(), user.getUsername()); // or better: password change event
     }
 }

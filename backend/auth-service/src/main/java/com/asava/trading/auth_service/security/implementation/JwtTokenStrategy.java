@@ -1,6 +1,8 @@
-package com.asava.trading.auth_service.security;
+package com.asava.trading.auth_service.security.implementation;
 
 import com.asava.trading.auth_service.entity.User;
+import com.asava.trading.auth_service.security.TokenStrategy;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -16,7 +18,7 @@ import java.util.function.Function;
 
 @Component
 @Slf4j
-public class JwtTokenProvider {
+public class JwtTokenStrategy implements TokenStrategy {
 
     @Value("${jwt.secret}")
     private String jwtSecret;

@@ -8,4 +8,5 @@ public interface IAuthService {
     AuthResponse refreshToken(RefreshTokenRequest request);
     TokenValidationResponse validateToken(String token);
     void logout(String username);
+    void changePassword(String username, ChangePasswordRequest request);
 }

@@ -3,10 +3,12 @@ package com.example.exchange_server.dto;
 import com.example.exchange_server.model.OrderType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
+
 public class OrderRequestDTO {
 
     @NotNull(message = "User ID is required")
