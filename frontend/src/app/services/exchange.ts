@@ -1,24 +1,53 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { OrderRequest,OrderResponse,TradeResponse } from '../models/exchange';
+import { OrderRequest, OrderResponse } from '../models/exchange';
+import { environment } from '../../environments/environment.development';
+
 @Injectable({
   providedIn: 'root',
 })
 export class ExchangeService {
-  private baseUrl = 'http://localhost:8081/api/v1/exchange'; // Adjust if different
+  // baseUrl is http://localhost:8088/api/v1
+  private resourceUrl = `${environment.baseUrl}/exchange`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  placeOrder(order: OrderRequest): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(`${this.baseUrl}/orders`, order);
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  // Price validation logic (5% deviation)
+  /**
+   * PLACE ORDER: POST /api/v1/exchange/order
+   */
+  placeOrder(order: OrderRequest): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.resourceUrl}/order`, order, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  /**
+   * GET USER ORDERS: GET /api/v1/exchange/user/{userId}
+   * Used for the Trade History section in the Wallet
+   */
+  getUserOrders(userId: number): Observable<OrderResponse[]> {
+    return this.http.get<OrderResponse[]>(`${this.resourceUrl}/user/${userId}`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  /**
+   * Price validation logic (5% deviation)
+   * This stays on the frontend for immediate user feedback
+   */
   validatePrice(currentPrice: number, orderPrice: number): { valid: boolean; message: string } {
     const deviation = Math.abs(orderPrice - currentPrice) / currentPrice;
     if (deviation > 0.05) {
-      return { valid: false, message: 'Price deviation cannot exceed 5% of current market price.' };
+      return {
+        valid: false,
+        message: `Price deviation (₹${orderPrice}) cannot exceed 5% of market price (₹${currentPrice}).`,
+      };
     }
     return { valid: true, message: '' };
   }

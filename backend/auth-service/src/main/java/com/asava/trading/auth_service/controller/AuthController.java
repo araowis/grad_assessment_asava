@@ -1,13 +1,26 @@
 package com.asava.trading.auth_service.controller;
 
-import com.asava.trading.auth_service.dto.*;
-import com.asava.trading.auth_service.service.IAuthService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.asava.trading.auth_service.dto.ApiResponse;
+import com.asava.trading.auth_service.dto.AuthResponse;
+import com.asava.trading.auth_service.dto.LoginRequest;
+import com.asava.trading.auth_service.dto.RefreshTokenRequest;
+import com.asava.trading.auth_service.dto.RegisterRequest;
+import com.asava.trading.auth_service.dto.TokenValidationResponse;
+import com.asava.trading.auth_service.service.IAuthService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -17,8 +30,8 @@ public class AuthController {
     private final IAuthService authService;
 
     /**
-     * POST /api/v1/auth/register
-     * Creates a new trader account and returns JWT tokens immediately.
+     * POST /api/v1/auth/register Creates a new trader account and returns JWT
+     * tokens immediately.
      */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
@@ -30,8 +43,8 @@ public class AuthController {
     }
 
     /**
-     * POST /api/v1/auth/login
-     * Authenticates with email/username + password, returns JWT tokens.
+     * POST /api/v1/auth/login Authenticates with email/username + password,
+     * returns JWT tokens.
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
@@ -42,8 +55,8 @@ public class AuthController {
     }
 
     /**
-     * POST /api/v1/auth/refresh-token
-     * Rotates the refresh token and returns a fresh access token.
+     * POST /api/v1/auth/refresh-token Rotates the refresh token and returns a
+     * fresh access token.
      */
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
@@ -54,8 +67,8 @@ public class AuthController {
     }
 
     /**
-     * GET /api/v1/auth/validate?token=...
-     * Used by the API Gateway to validate any incoming Bearer token.
+     * GET /api/v1/auth/validate?token=... Used by the API Gateway to validate
+     * any incoming Bearer token.
      */
     @GetMapping("/validate")
     public ResponseEntity<TokenValidationResponse> validateToken(
@@ -67,8 +80,8 @@ public class AuthController {
     }
 
     /**
-     * POST /api/v1/auth/logout
-     * Revokes all refresh tokens for the authenticated user.
+     * POST /api/v1/auth/logout Revokes all refresh tokens for the authenticated
+     * user.
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(

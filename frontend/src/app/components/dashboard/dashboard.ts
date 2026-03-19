@@ -1,107 +1,143 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CompanyService } from '../../services/company';
+import { Auth } from '../../services/auth';
 import { Company } from '../../models/company';
+import { Trading } from '../trading/trading';
+import { FormsModule } from '@angular/forms';
+import { PortfolioStateService } from '../../services/profile-state.service.ts';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Trading, FormsModule],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css',
 })
 export class Dashboard implements OnInit {
-
   companies: Company[] = [];
-  stats: any[] = [];
   isLoading = true;
+  formattedMarketData: any[] = [];
 
-  constructor(private companyService: CompanyService) { }
+  // State for the Trading Component
+  selectedCompany: any = null;
+  selectedSymbol: string | null = null;
+  selectedPrice: number = 0;
+  currentUserId: number = 0;
+  activePortfolioId = 1;
+
+  stats: any[] = [];
+
+  constructor(
+    private companyService: CompanyService,
+    private authService: Auth,
+    private cdr: ChangeDetectorRef,
+    private portfolioState: PortfolioStateService,
+  ) {}
 
   ngOnInit(): void {
     this.loadCompanies();
+    const user = this.authService.getCurrentUser();
+    this.currentUserId = user?.id ? Number(user.id) : 0;
+    this.portfolioState.selectedId$.subscribe((id) => {
+      this.activePortfolioId = id;
+    });
   }
 
   loadCompanies() {
+    this.isLoading = true;
     this.companyService.getAllCompanies().subscribe({
-      next: (data) => {
-        this.companies = data;
+      next: (data: any) => {
+        this.companies = Array.isArray(data) ? data : [];
         this.calculateStats();
+        this.processMarketData();
         this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  selectCompany(item: any) {
+    // Show loading while fetching specific company details
+    this.isLoading = true;
+
+    // 🟢 Fetching fresh data from backend to ensure currentPrice is accurate
+    this.companyService.getCompanyById(item.symbol).subscribe({
+      next: (company: Company) => {
+        this.selectedSymbol = company.shortId;
+        this.selectedPrice = company.currentPrice;
+
+        this.selectedCompany = {
+          symbol: company.shortId,
+          name: company.name,
+          price: company.currentPrice,
+        };
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching companies', err);
+        console.error('Could not fetch company details', err);
         this.isLoading = false;
-      }
+        alert('Failed to load real-time data for this company.');
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  clearSelection() {
+    this.selectedCompany = null;
+    this.selectedSymbol = null;
+    this.selectedPrice = 0;
+    this.cdr.detectChanges();
+  }
+
+  processMarketData() {
+    this.formattedMarketData = this.companies.map((c) => {
+      const opening = c.openingPrice || c.currentPrice;
+      const changePercent = ((c.currentPrice - opening) / opening) * 100;
+      return {
+        symbol: c.shortId,
+        name: c.name,
+        price: `₹${c.currentPrice.toFixed(2)}`,
+        change: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`,
+        color: changePercent >= 0 ? 'text-emerald-400' : 'text-rose-400',
+        bg: changePercent >= 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10',
+      };
     });
   }
 
   calculateStats() {
-    if (!this.companies || this.companies.length === 0) {
-      this.stats = [];
-      return;
-    }
-
-    let totalValue = 0;
-    let totalGain = 0;
-    let topGainer: Company | undefined;
-    let maxGainPercent = -Infinity;
-
-    this.companies.forEach(c => {
-      const value = c.currentPrice * c.noOfShare;
-      totalValue += value;
-
-      const gain = (c.currentPrice - c.openingPrice) * c.noOfShare;
-      totalGain += gain;
-
-      const gainPercent =
-        c.openingPrice === 0
-          ? 0
-          : ((c.currentPrice - c.openingPrice) / c.openingPrice) * 100;
-
-      if (gainPercent > maxGainPercent) {
-        maxGainPercent = gainPercent;
-        topGainer = c;
-      }
-    });
-
+    if (!this.companies.length) return;
+    const totalCap = this.companies.reduce(
+      (acc, c) => acc + c.currentPrice * (c.noOfShare || 0),
+      0,
+    );
     this.stats = [
       {
-        label: 'Total Value',
-        value: `$${totalValue.toFixed(2)}`,
-        sub: `${this.companies.length} companies`,
-        icon: 'INR',
-        color: 'text-blue-500'
+        label: 'Market Cap',
+        value: `₹${(totalCap / 10000000).toFixed(2)}Cr`,
+        icon: '💎',
+        color: 'text-blue-500',
+        sub: 'Total Valuation',
       },
       {
-        label: 'Total Gain',
-        value: `$${totalGain.toFixed(2)}`,
-        sub: `${((totalGain / totalValue) * 100 || 0).toFixed(2)}% return`,
-        icon: '📈',
-        color: 'text-emerald-500'
+        label: 'Active Assets',
+        value: this.companies.length,
+        icon: '🏢',
+        color: 'text-emerald-500',
+        sub: 'Listed Companies',
       },
       {
-        label: 'Top Gainer',
-        value: topGainer?.shortId || '-',
-        sub: topGainer ? `${maxGainPercent.toFixed(2)}% today` : 'N/A',
-        icon: '🔝',
-        color: 'text-emerald-400'
-      }
+        label: '24h Volume',
+        value: '₹12.4L',
+        icon: '📊',
+        color: 'text-amber-500',
+        sub: '+5.2% from yesterday',
+      },
     ];
-  }
-
-  get marketData() {
-    return this.companies.map(c => {
-      const changePercent =
-        ((c.currentPrice - c.openingPrice) / c.openingPrice) * 100;
-
-      return {
-        symbol: c.shortId,
-        name: c.name,
-        price: `$${c.currentPrice.toFixed(2)}`,
-        change: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`,
-        color: changePercent >= 0 ? 'bg-green-500' : 'bg-red-500'
-      };
-    });
   }
 }

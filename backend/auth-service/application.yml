@@ -9,9 +9,10 @@ spring:
     import: optional:configserver:http://localhost:8888
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/asava_trading
+    # url: jdbc:postgresql://localhost:5432/asava_trading
+    url: jdbc:postgresql://localhost:5432/test
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:hydroarchon}
+    password: ${DB_PASSWORD:123@Akash}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -36,8 +37,8 @@ eureka:
 
 jwt:
   secret: ${JWT_SECRET:dGVzdHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHkxMjM0NTY3ODk=}
-  expiration: 86400000 
-  refresh-expiration: 604800000 
+  expiration: 86400000
+  refresh-expiration: 604800000
 
 management:
   endpoints:

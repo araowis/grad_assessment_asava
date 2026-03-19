@@ -7,5 +7,6 @@ public class PortfolioRequestDto {
 
     private Long portfolioGroupId;
     private String companyId;
+    private double price;
     private int quantity;// optional (can remove later)
 }
