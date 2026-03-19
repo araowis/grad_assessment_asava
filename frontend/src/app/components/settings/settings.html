@@ -1,1 +1,186 @@
-<p>settings works!</p>
+<div class="min-h-screen bg-[#0a0f1c] p-6 md:p-10">
+
+  <!-- Header -->
+  <div class="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <p class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 mb-2">Account</p>
+    <h1 class="text-3xl font-bold text-white">Settings</h1>
+    <p class="text-slate-500 text-sm mt-1">Manage your account security and preferences</p>
+  </div>
+
+  <div class="max-w-2xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+    <!-- User Info Card -->
+    <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6 flex items-center gap-5">
+      <div class="w-14 h-14 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black text-xl uppercase">
+        {{ user?.username?.charAt(0) || '?' }}
+      </div>
+      <div>
+        <div class="text-white font-bold text-lg">{{ user?.username || 'Unknown' }}</div>
+        <div class="text-slate-500 text-sm">{{ user?.email || '—' }}</div>
+        <div class="mt-1 px-2 py-0.5 inline-block rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest">
+          {{ user?.role || 'TRADER' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password Card -->
+    <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-white font-bold text-sm uppercase tracking-wider">Change Password</h2>
+          <p class="text-slate-600 text-[11px] mt-0.5">Minimum 8 characters required</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+
+        <!-- Current Password -->
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+            Current Password
+          </label>
+          <div class="relative">
+            <input
+              [(ngModel)]="currentPassword"
+              [type]="showCurrent ? 'text' : 'password'"
+              placeholder="Enter current password"
+              class="w-full bg-[#0a0f1c] border border-slate-800 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder-slate-700 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all pr-12"
+            />
+            <button
+              type="button"
+              (click)="showCurrent = !showCurrent"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path *ngIf="!showCurrent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path *ngIf="showCurrent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- New Password -->
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+            New Password
+          </label>
+          <div class="relative">
+            <input
+              [(ngModel)]="newPassword"
+              [type]="showNew ? 'text' : 'password'"
+              placeholder="Enter new password"
+              class="w-full bg-[#0a0f1c] border border-slate-800 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder-slate-700 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all pr-12"
+            />
+            <button
+              type="button"
+              (click)="showNew = !showNew"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path *ngIf="!showNew" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path *ngIf="showNew" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Password strength bar -->
+          <div *ngIf="newPassword" class="mt-2 space-y-1">
+            <div class="flex gap-1">
+              <div *ngFor="let i of [1,2,3,4,5]"
+                class="h-1 flex-1 rounded-full transition-all duration-300"
+                [style.background-color]="i <= passwordStrength.score ? passwordStrength.color : '#1e293b'">
+              </div>
+            </div>
+            <p class="text-[10px] font-bold uppercase tracking-widest"
+              [style.color]="passwordStrength.color">
+              {{ passwordStrength.label }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 block">
+            Confirm New Password
+          </label>
+          <div class="relative">
+            <input
+              [(ngModel)]="confirmPassword"
+              [type]="showConfirm ? 'text' : 'password'"
+              placeholder="Repeat new password"
+              class="w-full bg-[#0a0f1c] border rounded-xl px-4 py-3 text-white text-sm font-mono placeholder-slate-700 focus:outline-none transition-all pr-12"
+              [class.border-slate-800]="!confirmPassword || confirmPassword === newPassword"
+              [class.border-emerald-500]="confirmPassword && confirmPassword === newPassword"
+              [class.border-rose-500]="confirmPassword && confirmPassword !== newPassword"
+              [class.focus:border-blue-500]="!confirmPassword"
+            />
+            <button
+              type="button"
+              (click)="showConfirm = !showConfirm"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path *ngIf="!showConfirm" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path *ngIf="showConfirm" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            </button>
+          </div>
+          <p *ngIf="confirmPassword && confirmPassword !== newPassword"
+            class="text-rose-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+            Passwords do not match
+          </p>
+          <p *ngIf="newPassword && newPassword === currentPassword && currentPassword"
+            class="text-amber-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+            New password must differ from current
+          </p>
+        </div>
+
+        <!-- Feedback -->
+        <div *ngIf="successMessage"
+          class="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage"
+          class="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Submit -->
+        <button
+          (click)="changePassword()"
+          [disabled]="!isValid || isLoading"
+          class="w-full py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all duration-300 mt-2"
+          [class.bg-blue-600]="isValid && !isLoading"
+          [class.hover:bg-blue-500]="isValid && !isLoading"
+          [class.text-white]="isValid && !isLoading"
+          [class.shadow-lg]="isValid && !isLoading"
+          [class.bg-slate-800]="!isValid || isLoading"
+          [class.text-slate-600]="!isValid || isLoading"
+          [class.cursor-not-allowed]="!isValid || isLoading">
+          <span *ngIf="!isLoading">Update Password</span>
+          <span *ngIf="isLoading" class="flex items-center justify-center gap-2">
+            <span class="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></span>
+            Updating...
+          </span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>  
